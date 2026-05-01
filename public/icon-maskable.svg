@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hype Sign">
+  <defs>
+    <!-- Brighter brand background: light sky-blue at top → brand blue at bottom -->
+    <linearGradient id="bg" x1="32" y1="0" x2="32" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a8defe"/>
+      <stop offset="100%" stop-color="#4f8cff"/>
+    </linearGradient>
+    <!-- Top sheen for that lit-glass feel even when the cropper trims to a circle -->
+    <linearGradient id="bgSheen" x1="32" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed sky-to-brand background -->
+  <rect width="64" height="64" fill="url(#bg)"/>
+  <rect width="64" height="64" fill="url(#bgSheen)"/>
+
+  <!-- White equalizer bars centered in the safe zone -->
+  <g fill="#ffffff">
+    <rect x="20" y="24" width="5" height="16" rx="2.5"/>
+    <rect x="29.5" y="14" width="5" height="36" rx="2.5"/>
+    <rect x="39" y="28" width="5" height="8" rx="2.5"/>
+  </g>
+</svg>

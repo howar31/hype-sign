@@ -1,5 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
-  <rect x="6" y="6" width="52" height="52" rx="10" fill="#4f8cff"/>
-  <path d="M18 14 V50 M46 14 V50 M18 32 H46" stroke="#fff" stroke-width="6" stroke-linecap="square" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hype Sign">
+  <defs>
+    <!-- Crystal-clear glass body — very low alpha so the tab background reads through -->
+    <linearGradient id="body" x1="32" y1="4" x2="32" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.06"/>
+    </linearGradient>
+    <!-- Strong top rim — gives the crystalline "lit-edge" feel -->
+    <linearGradient id="rim" x1="32" y1="4" x2="32" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Sharp top-left specular highlight (small, not a wide diffuse sheen) -->
+    <linearGradient id="specular" x1="6" y1="6" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- Subtle bottom shadow keeps the tile grounded -->
+    <linearGradient id="shadow" x1="32" y1="40" x2="32" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.16"/>
+    </linearGradient>
+    <!-- Bar fill: bright sky-cyan top → brand blue bottom -->
+    <linearGradient id="bar" x1="32" y1="12" x2="32" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a8defe"/>
+      <stop offset="100%" stop-color="#4f8cff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Translucent crystal tile -->
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="url(#body)"/>
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="url(#specular)"/>
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="url(#rim)"/>
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="url(#shadow)"/>
+  <!-- Crystal edge: thin dark trace + bright inner trace -->
+  <rect x="4" y="4" width="56" height="56" rx="13"
+    fill="none" stroke="#000000" stroke-opacity="0.1" stroke-width="0.5"/>
+  <rect x="4.5" y="4.5" width="55" height="55" rx="12.5"
+    fill="none" stroke="#ffffff" stroke-opacity="0.7" stroke-width="1"/>
+
+  <!-- Equalizer / hype bars (sky-cyan → brand blue) -->
+  <g fill="url(#bar)">
+    <rect x="17" y="22" width="6" height="20" rx="3"/>
+    <rect x="29" y="14" width="6" height="36" rx="3"/>
+    <rect x="41" y="26" width="6" height="16" rx="3"/>
+  </g>
 </svg>

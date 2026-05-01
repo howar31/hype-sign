@@ -56,6 +56,23 @@ After forking to a new GitHub repo:
 
 The Vite `base` is `/hype-sign/`. If you fork under a different repo name, update `base` in `vite.config.ts` and `start_url` / `scope` in the manifest there.
 
+## Icons
+
+Three SVG sources, each focused on a specific surface:
+
+- `public/favicon.svg` — transparent crystal-glass tile + sky-cyan equalizer bars. Used as the browser-tab favicon; the canvas stays transparent so it sits on any tab background.
+- `public/icon-light.svg` — full-bleed sky-blue gradient + white equalizer bars. Source of the home-screen PNGs (192 / 512). Bright, light-feel.
+- `public/icon-maskable.svg` — same sky-blue background, but bars inset to fit the maskable safe zone.
+
+All PNGs are rasterized with [librsvg](https://wiki.gnome.org/Projects/LibRsvg)'s `rsvg-convert`. To re-render after editing the SVGs:
+
+```bash
+brew install librsvg    # one-time, if not already installed
+rsvg-convert -w 192 -h 192 public/icon-light.svg     -o public/icons/192.png
+rsvg-convert -w 512 -h 512 public/icon-light.svg     -o public/icons/512.png
+rsvg-convert -w 512 -h 512 public/icon-maskable.svg  -o public/icons/maskable-512.png
+```
+
 ## Architecture
 
 See [SPEC.md](SPEC.md) for the full architecture spec — modules, data model, render pipeline, store actions, PWA setup, and gotchas.

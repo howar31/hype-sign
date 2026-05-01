@@ -29,3 +29,8 @@ GitHub Actions on push to `main` → GitHub Pages. Live at `http://lab.howar31.c
 - Settings model + persistence — `src/store/settingsStore.ts`
 - Color model — `src/types.ts`
 - i18n strings — `src/lib/i18n.ts`
+- Icon design — three SVG sources:
+  - `public/favicon.svg` — transparent crystal-glass tile (browser tab).
+  - `public/icon-light.svg` — full-bleed sky-blue gradient + white bars (source for 192/512 PNGs).
+  - `public/icon-maskable.svg` — same sky-blue background with bars inset to safe zone (source for maskable-512.png).
+  PNGs are rasterized via `rsvg-convert`. Logo colors are fixed — no `prefers-color-scheme`. See SPEC.md for the exact regen commands.

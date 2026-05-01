@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Hype Sign',
-        short_name: 'Hype',
+        short_name: 'Hype Sign',
         description: '電子應援手板 / LED 顯示板 — Cheering board PWA',
         lang: 'zh-TW',
         theme_color: '#000000',

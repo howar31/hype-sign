@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hype Sign">
+  <defs>
+    <!-- Sky-blue → brand-blue gradient -->
+    <linearGradient id="bg" x1="32" y1="0" x2="32" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a8defe"/>
+      <stop offset="100%" stop-color="#4f8cff"/>
+    </linearGradient>
+    <!-- Top sheen for the lit-glass feel -->
+    <linearGradient id="bgSheen" x1="32" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed light gradient -->
+  <rect width="64" height="64" fill="url(#bg)"/>
+  <rect width="64" height="64" fill="url(#bgSheen)"/>
+
+  <!-- White equalizer bars (same proportions as favicon.svg, full visual area) -->
+  <g fill="#ffffff">
+    <rect x="17" y="22" width="6" height="20" rx="3"/>
+    <rect x="29" y="14" width="6" height="36" rx="3"/>
+    <rect x="41" y="26" width="6" height="16" rx="3"/>
+  </g>
+</svg>

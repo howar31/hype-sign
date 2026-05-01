@@ -167,10 +167,37 @@ Single file, two flat dicts (ZH-TW + EN). `useT()` returns `(key) => string`. Mi
 
 `vite.config.ts` configures `vite-plugin-pwa` with:
 - `registerType: 'autoUpdate'` — new SW activates next launch
-- Workbox precaches all `js/css/html/svg/png/ico/webmanifest` build outputs (currently 14 entries, ~178 KiB)
-- Manifest: `display: standalone`, `start_url`/`scope` = `/hype-sign/`, three icons (192, 512, maskable-512)
+- Workbox precaches all `js/css/html/svg/png/ico/webmanifest` build outputs
+- Manifest: `name` = `'Hype Sign'`, `short_name` = `'Hype Sign'` (kept as the full name so the iOS/Android home-screen label doesn't collapse to just "Hype"), `display: standalone`, `start_url`/`scope` = `/hype-sign/`, three icons (192, 512, maskable-512)
 
-Icons live at `public/icons/`. Generator at `scripts/gen-icons.mjs`-style process is documented in commit history; current PNGs are placeholder (solid colored "H" tiles) — replace `public/icons/*.png` to ship a real brand.
+Icons are SVG-sourced and rasterized to PNG via `rsvg-convert` (librsvg). Source files:
+
+Three SVG sources, each used for a specific purpose:
+
+- `public/favicon.svg` — **browser tab favicon, transparent canvas**. Crystal-clear translucent glass tile: low-alpha white body (≤0.22), strong top rim light (α=0.85), small specular highlight at top-left, faint bottom shadow. Dual stroke edge — outer `#000` α=0.1 + inner `#fff` α=0.7 — keeps the silhouette readable on both light and dark tabs. Inside the tile, a 3-bar equalizer motif filled with a sky-cyan → brand-blue gradient (`#a8defe → #4f8cff`); tall middle bar, shorter flanking bars.
+- `public/icon-light.svg` — **standard PWA icon source** (192/512). Full-bleed sky-blue → brand-blue gradient (`#a8defe → #4f8cff`) with a top sheen, and **white** equalizer bars at full visual size (no safe-zone inset). Bright/light feel — used because the previous dark-backplate look read as "dark mode" on home screens.
+- `public/icon-maskable.svg` — **maskable PWA icon source** (maskable-512). Same sky-blue background as `icon-light.svg`, but the white bars are inset to fit the maskable safe zone (~80% of canvas) so cropping won't trim them.
+
+The 192/512 PNGs come from `icon-light.svg`, no `-b` background needed. The maskable PNG comes from `icon-maskable.svg`. The transparent favicon.svg drives only the browser-tab favicon, not any PNG.
+
+Logo colors are **fixed** — none of the SVGs respond to `prefers-color-scheme`. PNGs are static and cannot adapt anyway. iOS additionally locks the home-screen icon at "Add to Home Screen" time, so even if the SVG could adapt, the installed PWA wouldn't switch. If you want a dark-themed favicon for browser tabs, embed `<style>@media (prefers-color-scheme: dark) { ... }</style>` inside favicon.svg (Safari/Firefox honor it; Chrome's support is unstable).
+
+Regenerate after editing any SVG:
+
+```bash
+rsvg-convert -w 192 -h 192 public/icon-light.svg     -o public/icons/192.png
+rsvg-convert -w 512 -h 512 public/icon-light.svg     -o public/icons/512.png
+rsvg-convert -w 512 -h 512 public/icon-maskable.svg  -o public/icons/maskable-512.png
+```
+
+Optional dark-themed PNGs (if you want to swap back manually) — rasterize from the transparent favicon.svg with a dark backplate baked in:
+
+```bash
+rsvg-convert -w 192 -h 192 -b "#1a1a20" public/favicon.svg -o public/icons/192.png
+rsvg-convert -w 512 -h 512 -b "#1a1a20" public/favicon.svg -o public/icons/512.png
+```
+
+Headless Chrome (Puppeteer) hangs on multi-gradient `page.screenshot` of these SVGs in this environment — `rsvg-convert` is the path that actually works. Install via `brew install librsvg` if missing.
 
 ## Styling — Liquid Glass
 
