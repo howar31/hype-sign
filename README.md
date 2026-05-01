@@ -17,6 +17,7 @@
 - **Touch + mouse + pen** via Pointer Events
 - **Fully offline** — installs as a PWA, works without network after first load
 - **Liquid-Glass UI** — translucent backdrop-blurred settings panel
+- **Tap to hide controls** — single tap on the canvas hides / reveals the floating settings button so the display can stay uncluttered
 
 ## Quick start
 

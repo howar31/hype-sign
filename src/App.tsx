@@ -8,6 +8,10 @@ export function App() {
   const mode = useSettings((s) => s.mode);
   const rotation = useSettings((s) => s.rotation);
   const [open, setOpen] = useState(false);
+  // Tap the canvas to hide / show the floating settings button so the
+  // display can be uncluttered. When hidden, pointer-events: none lets the
+  // tap pass through to display-root, which flips it back on.
+  const [toggleVisible, setToggleVisible] = useState(true);
 
   const rotated = rotation === 90 || rotation === 270;
   const transformStyle = rotation === 0
@@ -24,9 +28,16 @@ export function App() {
         marginTop: rotated ? '-50dvw' : '-50dvh',
       };
 
+  function onCanvasClick() {
+    // Drawer is handling its own clicks (backdrop closes it); don't
+    // double-fire visibility toggling while it's open.
+    if (open) return;
+    setToggleVisible((v) => !v);
+  }
+
   return (
     <>
-      <div className="display-root">
+      <div className="display-root" onClick={onCanvasClick}>
         <div style={transformStyle ?? { width: '100%', height: '100%' }}>
           {mode === 'static' ? <StaticDisplay /> : <MarqueeDisplay />}
         </div>
@@ -34,8 +45,9 @@ export function App() {
 
       <button
         type="button"
-        className="settings-toggle"
+        className={`settings-toggle${toggleVisible ? '' : ' hidden'}`}
         aria-label="Open settings"
+        aria-hidden={!toggleVisible}
         onClick={() => setOpen(true)}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>

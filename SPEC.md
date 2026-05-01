@@ -219,6 +219,7 @@ Everything that's a "raised surface" uses `--glass-bg-elev`; everything that's "
 - All tap targets ≥ 36px (most are 40+)
 - `useWakeLock` keeps screen awake while drawer is mounted (re-acquires on visibility change)
 - iOS standalone meta tags set in `index.html`
+- Tapping anywhere on the display canvas (`.display-root`) toggles the floating settings button visibility — held in `App.tsx` local state (`toggleVisible`). When hidden the button gets `.hidden` (opacity 0, `pointer-events: none`, slight scale-down) so the tap on the same area passes through to the canvas and flips it back on. The toggle is gated by `!open` so an open drawer's backdrop click only closes the drawer.
 
 ## Deploy
 

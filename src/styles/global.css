@@ -121,6 +121,12 @@ input[type='range'] {
   transform: scale(0.94);
 }
 
+.settings-toggle.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.85);
+}
+
 /* ---------------------------------------------------------------------------
  * Drawer
  * ------------------------------------------------------------------------ */
