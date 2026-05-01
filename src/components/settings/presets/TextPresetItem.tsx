@@ -20,14 +20,14 @@ export function TextPresetItem({ preset, onApply, onDelete }: Props) {
           {display}
         </span>
       </div>
-      <button
-        type="button"
-        className="btn"
-        style={{ height: 32, fontSize: 12 }}
-        onClick={onApply}
+      <ConfirmButton
+        variant="neutral"
+        confirmLabel={t('preset.applyConfirm')}
+        onConfirm={onApply}
+        style={{ height: 32, fontSize: 12, padding: '0 12px' }}
       >
         {t('preset.apply')}
-      </button>
+      </ConfirmButton>
       <ConfirmButton
         confirmLabel="?"
         onConfirm={onDelete}

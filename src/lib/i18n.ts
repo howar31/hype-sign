@@ -19,7 +19,6 @@ const ZH: Dict = {
 
   'text.label': '文字',
   'text.placeholder': '輸入要顯示的文字（可多行）',
-  'text.clear': '清除文字',
 
   'speed.label': '跑馬燈速度',
   'speed.unit': 'px/秒',
@@ -47,18 +46,23 @@ const ZH: Dict = {
   'gradient.remove': '刪除',
   'gradient.position': '位置',
 
-  'colorPreset.section': '顏色預設',
-  'textPreset.section': '文字預設',
-  'preset.empty': '尚未儲存',
-  'preset.namePlaceholder': '預設名稱（可留白）',
+  'colorPreset.section': '顏色樣板',
+  'textPreset.section': '文字樣板',
+  'preset.empty': '尚未儲存任何樣板',
+  'preset.namePlaceholder': '樣板名稱（可留白）',
   'preset.save': '儲存',
   'preset.apply': '套用',
+  'preset.applyConfirm': '再點一次確認套用',
   'preset.delete': '刪除',
   'preset.deleteConfirm': '再點一次確認',
 
   'reset.label': '重置顏色',
   'reset.button': '重置為黑底白字',
   'reset.confirm': '再點一次確認重置',
+
+  'clear.label': '清除文字',
+  'clear.button': '清空目前文字',
+  'clear.confirm': '再點一次確認清除',
 };
 
 const EN: Dict = {
@@ -77,7 +81,6 @@ const EN: Dict = {
 
   'text.label': 'Text',
   'text.placeholder': 'Enter text to display (multi-line supported)',
-  'text.clear': 'Clear text',
 
   'speed.label': 'Marquee speed',
   'speed.unit': 'px/s',
@@ -111,12 +114,17 @@ const EN: Dict = {
   'preset.namePlaceholder': 'Name (optional)',
   'preset.save': 'Save',
   'preset.apply': 'Apply',
+  'preset.applyConfirm': 'Tap again to apply',
   'preset.delete': 'Delete',
   'preset.deleteConfirm': 'Tap again to confirm',
 
   'reset.label': 'Reset colors',
   'reset.button': 'Reset to white on black',
   'reset.confirm': 'Tap again to confirm',
+
+  'clear.label': 'Clear text',
+  'clear.button': 'Clear current text',
+  'clear.confirm': 'Tap again to confirm',
 };
 
 const DICTS: Record<Lang, Dict> = {

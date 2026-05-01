@@ -157,9 +157,7 @@ input[type='range'] {
   flex-direction: column;
   padding-top: env(safe-area-inset-top, 0);
   padding-bottom: env(safe-area-inset-bottom, 0);
-  box-shadow:
-    -16px 0 48px rgba(0, 0, 0, 0.4),
-    inset 1px 0 0 var(--glass-highlight);
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.4);
 }
 
 .drawer.open {
@@ -370,6 +368,14 @@ input[type='range'] {
   background: var(--danger);
   color: #fff;
   border-color: var(--danger);
+}
+
+/* Neutral armed (used by Apply confirm). Specificity below .btn.danger.armed
+   so danger variant still wins on a danger button. */
+.btn.armed {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
 .btn.active {

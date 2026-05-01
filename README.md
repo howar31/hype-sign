@@ -40,7 +40,9 @@ The drawer is split into three tabs to keep things scannable:
 | Style | text color · background color · color presets · reset colors |
 | Other | rotate 90° · fullscreen · language |
 
-Reset only resets colors — it never touches your text, mode, speed, or rotation. Destructive actions (reset, preset delete, text clear) confirm by tapping twice — no popup dialog.
+Reset only resets colors — it never touches your text, mode, speed, or rotation. Destructive actions (reset, preset delete, text clear) confirm by tapping twice — no popup dialog. Applying a saved preset also asks for a second tap before overwriting your current colors / text.
+
+Saved snapshots are called 「樣板」 (templates) in the Chinese UI, not 「預設」, since the latter is the standard zh-TW word for "default" and would be confusing.
 
 ## Deploy
 

@@ -17,7 +17,8 @@ See [SPEC.md](SPEC.md).
 - Colors follow the `ColorValue` discriminated union — solid / linear / radial. CSS rendering via `colorToCss`; SVG fill via `<GradientDef>` + `fillFor`.
 - Text rendering in `StaticDisplay` uses SVG `getBBox()` to derive the viewBox; never use `dominant-baseline="hanging"` (Safari clips it in landscape).
 - Drawer settings are tabbed: each tab is one component in `src/components/settings/sections/`.
-- Destructive UI actions (reset, delete, clear) use `ConfirmButton` (double-tap pattern). Never use `alert()` / `confirm()` / native dialogs.
+- Destructive UI actions (reset, delete, clear) use `ConfirmButton variant="danger"` — red armed state. Non-destructive but irreversible-feeling actions (apply preset) use `variant="neutral"` — blue armed state. Never use `alert()` / `confirm()` / native dialogs.
+- Chinese terminology: user-saved snapshots are 「樣板」 (templates), not 「預設」 (which means "default" in zh-TW and is ambiguous). English stays "preset".
 
 ## Deploy
 GitHub Actions on push to `main` → GitHub Pages. Live at `http://lab.howar31.com/hype-sign/`. Vite `base` is `/hype-sign/`; manifest `scope` and `start_url` match.

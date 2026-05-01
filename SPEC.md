@@ -137,19 +137,31 @@ Single-line continuous scroller at constant pixels-per-second.
 ## Settings panel
 
 Drawer with three tabs:
-- **Text** — text input, mode toggle, marquee-speed slider (when mode=marquee), text presets
+- **Text** — text input, mode toggle, marquee-speed slider (when mode=marquee), text presets, clear-text button (mirrors the visual position of reset-colors in Style tab)
 - **Style** — text-color editor, background-color editor, color presets, reset-colors button
 - **Other** — rotate 90° cycle, fullscreen, language toggle
+
+`ClearTextButton` and `ResetButton` are visually identical (same section + danger ConfirmButton at the bottom of their tab) — clearing text and resetting colors are the two scoped destructive actions, parallel by design. Both are disabled / no-op when there's nothing to act on.
 
 Tab state is local (`useState`) — not persisted across sessions; defaults to `text`.
 
 ## ConfirmButton
 
-Reusable double-tap-to-confirm pattern (`src/components/ui/ConfirmButton.tsx`). First click arms the button (label switches to a confirmation phrase), second click within `timeoutMs` (default 3000) fires `onConfirm`. Used for Reset, preset deletion, and the text-input clear button (28×28 icon variant in the Text tab section header, hidden when text is empty). No `alert()` / native dialog ever — they break the standalone PWA feel and double-tap is more touch-friendly.
+Reusable double-tap-to-confirm pattern (`src/components/ui/ConfirmButton.tsx`). First click arms the button (label switches to a confirmation phrase), second click within `timeoutMs` (default 3000) fires `onConfirm`.
+
+Two visual variants via `variant` prop (default `'danger'`):
+- `'danger'` — red border / red armed state. Used for destructive actions: reset colors (`ResetButton`), clear text (`ClearTextButton`), preset delete.
+- `'neutral'` — plain glass border / **blue** armed state. Used for non-destructive but state-replacing actions: applying a color or text preset (`PresetItem` / `TextPresetItem`).
+
+CSS specificity: `.btn.danger.armed` outranks `.btn.armed`, so danger buttons keep the red armed look even though both classes match.
+
+No `alert()` / native dialog is used anywhere — they break the standalone PWA feel and double-tap is more touch-friendly.
 
 ## i18n (`src/lib/i18n.ts`)
 
 Single file, two flat dicts (ZH-TW + EN). `useT()` returns `(key) => string`. Missing keys fall through to the key itself (visible during dev). Translation source is `lang` field from store. Add new strings to **both** dicts.
+
+**Terminology note:** in zh-TW, user-saved snapshots are translated as 「樣板」 (template), not 「預設」 (which collides with the standard term for "default"). English keeps "preset". Affected keys: `colorPreset.section`, `textPreset.section`, `preset.namePlaceholder`, `preset.empty`.
 
 ## PWA
 
@@ -199,3 +211,4 @@ To fork to a different repo name: change `base` in `vite.config.ts` and `start_u
 - **Color editor**: when adding a new gradient type, update `ColorValue` union + `colorToCss` + `colorToSvg.GradientDef` + `ColorEditor.selectType` (preserve stops when switching types).
 - **getBBox in StaticDisplay**: the `useLayoutEffect` dep array includes `text`, `fontSize`, `lineHeight`, `lines.length` — if you add new factors that affect rendering, include them too or measurements go stale.
 - **Don't reintroduce `dominant-baseline="hanging"`** — it clips on iOS Safari in landscape.
+- **Don't add `inset` left-edge `box-shadow` to `.drawer`** — iOS Safari leaks it through the `box-shadow: none` mobile media-query override, leaving a visible 1px white line on the left edge of the drawer. If you need a desktop edge highlight, use `border-left` (it's already removed cleanly on mobile).

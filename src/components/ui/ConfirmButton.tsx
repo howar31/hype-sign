@@ -1,11 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 
+type Variant = 'danger' | 'neutral';
+
 type Props = {
   /** Label shown when idle. */
   children: React.ReactNode;
   /** Label shown after first click; second click within timeout fires onConfirm. */
   confirmLabel: React.ReactNode;
   onConfirm: () => void;
+  /**
+   * Visual variant:
+   * - "danger" (default) — red border / red armed state. Use for destructive
+   *   actions (reset, delete, clear).
+   * - "neutral" — plain button border / blue armed state. Use for non-
+   *   destructive but irreversible-feeling actions (apply preset).
+   */
+  variant?: Variant;
   className?: string;
   style?: React.CSSProperties;
   timeoutMs?: number;
@@ -17,6 +27,7 @@ export function ConfirmButton({
   children,
   confirmLabel,
   onConfirm,
+  variant = 'danger',
   className,
   style,
   timeoutMs = 3000,
@@ -48,7 +59,14 @@ export function ConfirmButton({
     }, timeoutMs);
   }
 
-  const cls = ['btn', 'danger', armed ? 'armed' : '', className ?? ''].filter(Boolean).join(' ');
+  const cls = [
+    'btn',
+    variant === 'danger' ? 'danger' : '',
+    armed ? 'armed' : '',
+    className ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <button
