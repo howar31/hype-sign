@@ -1,6 +1,5 @@
 import { useEffect, useId, useMemo, useRef } from 'react';
 import { useSettings } from '../../store/settingsStore';
-import { colorToCss } from '../../lib/colorToCss';
 import { GradientDef, fillFor } from '../../lib/colorToSvg';
 import {
   FONT_FAMILY,
@@ -14,7 +13,6 @@ export function MarqueeDisplay() {
   const text = useSettings((s) => s.text);
   const speed = useSettings((s) => s.marqueeSpeed);
   const textColor = useSettings((s) => s.textColor);
-  const bgColor = useSettings((s) => s.bgColor);
   const margin = useSettings((s) => s.margin);
   const fontWeight = useSettings((s) => s.fontWeight);
 
@@ -24,7 +22,6 @@ export function MarqueeDisplay() {
   const reactId = useId();
   const gradId = `marq-grad-${reactId.replace(/:/g, '')}`;
   const fill = fillFor(textColor, gradId);
-  const bg = colorToCss(bgColor);
 
   const joined = useMemo(
     () => text.split('\n').map((s) => s.trim()).filter(Boolean).join(' '),
@@ -69,7 +66,6 @@ export function MarqueeDisplay() {
       style={{
         width: '100%',
         height: '100%',
-        background: bg,
         padding: `${margin}vmin`,
         boxSizing: 'border-box',
         overflow: 'hidden',

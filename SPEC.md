@@ -240,6 +240,55 @@ Everything that's a "raised surface" uses `--glass-bg-elev`; everything that's "
 - iOS standalone meta tags set in `index.html`
 - Tapping anywhere on the display canvas (`.display-root`) toggles the floating settings button visibility — held in `App.tsx` local state (`toggleVisible`). When hidden the button gets `.hidden` (opacity 0, `pointer-events: none`, slight scale-down) so the tap on the same area passes through to the canvas and flips it back on. The toggle is gated by `!open` so an open drawer's backdrop click only closes the drawer.
 
+### Two-layer canvas: bg-layer + display-root
+
+The display surface is split into two stacked full-viewport layers:
+
+- `.bg-layer` — `position: fixed; inset: 0; z-index: 0; pointer-events: none`. Carries the background color (set inline in `App.tsx` from `bgColor` via `colorToCss`). Always full-bleed so the bg extends under the iPhone notch and reaches every physical edge, satisfying `viewport-fit=cover`.
+- `.display-root` — `position: fixed; top: var(--sai-top); right: 0; bottom: 0; left: 0; z-index: 1`. Top is offset by the safe-area inset to clear the iPhone notch; bottom is `0` so the canvas reaches the physical bottom edge. iOS auto-hides the home indicator over a full-screen PWA, so we deliberately don't pad for it. `StaticDisplay` / `MarqueeDisplay` render transparent content inside this box and let `.bg-layer` show through.
+
+#### iOS standalone PWA quirk: env() inside fixed elements
+
+iOS Safari standalone mode sometimes resolves `env(safe-area-inset-*)` to `0` when read on a `position: fixed` element, even with `viewport-fit=cover` set. Workaround: resolve the four insets at `:root` and consume them via `var()` everywhere else.
+
+```css
+:root {
+  --sai-top:    env(safe-area-inset-top, 0px);
+  --sai-right:  env(safe-area-inset-right, 0px);
+  --sai-bottom: env(safe-area-inset-bottom, 0px);
+  --sai-left:   env(safe-area-inset-left, 0px);
+}
+.display-root, .settings-toggle, .drawer { /* uses var(--sai-*) */ }
+```
+
+`env()` resolves at `:root` consistently in iOS PWA mode; `var()` reads the already-resolved value at the point of use, so the fixed-element quirk doesn't bite. Always use `var(--sai-*)` in this codebase; never re-introduce `env(safe-area-inset-*)` directly on a fixed element.
+
+The `margin` user setting still applies as **additional uniform** padding inside each display, layered on top of the safe-area-aware display-root.
+
+Reference: [Designing Websites for iPhone X (WebKit blog)](https://webkit.org/blog/7929/designing-websites-for-iphone-x/) covers `viewport-fit=cover` and `env(safe-area-inset-*)`.
+
+### Rotation wrapper sizing
+
+`App.tsx` mounts the active display inside a wrapper that handles 0° / 90° / 180° / 270° rotation. The wrapper sizes itself to the **`.display-root` parent**, not the raw viewport, so the rotated content exactly fills the safe-area-aware canvas with no overflow:
+
+```ts
+const rotated = rotation === 90 || rotation === 270;
+const transformStyle = rotation === 0 ? undefined : {
+  position: 'absolute',
+  top: '50%', left: '50%',
+  width:  rotated ? 'calc(100dvh - var(--sai-top))' : '100%',
+  height: rotated ? '100vw' : 'calc(100dvh - var(--sai-top))',
+  transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+  transformOrigin: 'center center',
+};
+```
+
+When rotated 90°/270°, pre-rotation width = parent height (`calc(100dvh - var(--sai-top))`) and pre-rotation height = parent width (`100vw`); after rotation, those swap and the rotated visible bounds match the parent exactly.
+
+**Subtle gotcha — `height: 100%` does NOT give "parent width":** `100%` on the height property always resolves to the parent's *height*. Since `.display-root` is `100vw × (100dvh - var(--sai-top))`, using `height: 100%` here would size the wrapper to a `(100dvh - sai-top)` square — overflowing `.display-root` horizontally and getting clipped on left/right by `overflow: hidden` (this was the bug between commits b9d70a9 and the next). When you want "parent width" on the height property, spell out `100vw` explicitly.
+
+The earlier `100dvh × 100dvw` viewport-relative sizing overflowed `.display-root` vertically and got clipped at the notch boundary, wasting `--sai-top` worth of usable canvas. Don't reintroduce either of those formulations here.
+
 ## Deploy
 
 `.github/workflows/deploy.yml` runs on push to `main`:

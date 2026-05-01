@@ -19,6 +19,7 @@
 - **Liquid-Glass UI** — translucent backdrop-blurred settings panel
 - **Tap to hide controls** — single tap on the canvas hides / reveals the floating settings button so the display can stay uncluttered
 - **Edge margin slider** — set how much breathing room sits between the text and the screen edges (0–25% of the viewport's short side); background fills edge-to-edge regardless
+- **iOS-safe layout** — text content automatically dodges the iPhone notch and home-indicator via `env(safe-area-inset-*)`, while the background still extends to the physical edges; rotation (0°/90°/180°/270°) fits the safe canvas exactly, no clipping at the notch or screen edges
 - **Font weight slider** — pick a weight from 100 (thin) to 900 (black) in steps of 100; falls back to the nearest weight the active system font ships
 
 ## Quick start

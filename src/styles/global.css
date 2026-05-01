@@ -26,6 +26,16 @@
 
   --blur-glass: blur(40px) saturate(180%);
 
+  /* Safe-area insets exposed as CSS variables. Resolved by env() at the
+     document root (the most reliable spot in iOS PWA standalone mode),
+     then consumed via var() everywhere else — so we never rely on env()
+     resolving correctly inside a position: fixed element (a known WebKit
+     quirk that returns 0 for some iOS PWA standalone layouts). */
+  --sai-top: env(safe-area-inset-top, 0px);
+  --sai-right: env(safe-area-inset-right, 0px);
+  --sai-bottom: env(safe-area-inset-bottom, 0px);
+  --sai-left: env(safe-area-inset-left, 0px);
+
   /* The canonical FONT_FAMILY string is set on documentElement at boot
      (see main.tsx). Fallback covers the brief moment before JS runs. */
   font-family: var(--font-family, system-ui, sans-serif);
@@ -76,10 +86,36 @@ input[type='range'] {
 
 /* ---------------------------------------------------------------------------
  * Display canvas
+ *
+ * Two layers:
+ *   .bg-layer    — full-bleed (extends under the iOS notch / home indicator)
+ *                  so the background color reaches the physical edges.
+ *   .display-root — same fixed full-viewport box, but with safe-area
+ *                   insets as padding so text content avoids notch and
+ *                   home indicator. Also catches the canvas tap that
+ *                   toggles the settings button.
  * ------------------------------------------------------------------------ */
-.display-root {
+.bg-layer {
   position: fixed;
   inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.display-root {
+  /* iOS PWA layout strategy:
+     - top: avoid the notch via the resolved safe-area inset
+     - bottom: 0 — reach the physical bottom edge. iOS auto-hides the
+       home indicator for full-screen PWAs; we do not pad for it.
+     - left/right: 0 — let the canvas reach the side edges.
+     The bg-layer underneath is full-bleed, so even the area covered by
+     the notch keeps the bg color. */
+  position: fixed;
+  top: var(--sai-top);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -90,8 +126,8 @@ input[type='range'] {
  * ------------------------------------------------------------------------ */
 .settings-toggle {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 14px);
-  right: calc(env(safe-area-inset-right, 0px) + 14px);
+  top: calc(var(--sai-top) + 14px);
+  right: calc(var(--sai-right) + 14px);
   width: 44px;
   height: 44px;
   padding: 0;
@@ -162,8 +198,8 @@ input[type='range'] {
   transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
-  padding-top: env(safe-area-inset-top, 0);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-top: var(--sai-top);
+  padding-bottom: var(--sai-bottom);
   box-shadow: -16px 0 48px rgba(0, 0, 0, 0.4);
 }
 

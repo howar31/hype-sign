@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from './store/settingsStore';
+import { colorToCss } from './lib/colorToCss';
 import { StaticDisplay } from './components/display/StaticDisplay';
 import { MarqueeDisplay } from './components/display/MarqueeDisplay';
 import { SettingsPanel } from './components/settings/SettingsPanel';
@@ -7,25 +8,33 @@ import { SettingsPanel } from './components/settings/SettingsPanel';
 export function App() {
   const mode = useSettings((s) => s.mode);
   const rotation = useSettings((s) => s.rotation);
+  const bgColor = useSettings((s) => s.bgColor);
   const [open, setOpen] = useState(false);
   // Tap the canvas to hide / show the floating settings button so the
   // display can be uncluttered. When hidden, pointer-events: none lets the
   // tap pass through to display-root, which flips it back on.
   const [toggleVisible, setToggleVisible] = useState(true);
 
+  const bg = colorToCss(bgColor);
+
   const rotated = rotation === 90 || rotation === 270;
+  // Rotation wrapper sizes itself to .display-root (the safe-area-aware
+  // canvas), not the raw viewport. When rotated 90°/270° we swap pre-
+  // rotation dims with the parent's post-rotation dims:
+  //   pre-rotation width  = parent height = calc(100dvh - var(--sai-top))
+  //   pre-rotation height = parent width  = 100vw
+  // (100% on the height property resolves to parent.height — *not*
+  // parent.width — so we must spell out 100vw explicitly.)
   const transformStyle = rotation === 0
     ? undefined
     : {
-        transform: `rotate(${rotation}deg)`,
-        width: rotated ? '100dvh' : '100dvw',
-        height: rotated ? '100dvw' : '100dvh',
-        transformOrigin: 'center center',
         position: 'absolute' as const,
         top: '50%',
         left: '50%',
-        marginLeft: rotated ? '-50dvh' : '-50dvw',
-        marginTop: rotated ? '-50dvw' : '-50dvh',
+        width: rotated ? 'calc(100dvh - var(--sai-top))' : '100%',
+        height: rotated ? '100vw' : 'calc(100dvh - var(--sai-top))',
+        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+        transformOrigin: 'center center',
       };
 
   function onCanvasClick() {
@@ -37,6 +46,12 @@ export function App() {
 
   return (
     <>
+      {/* Edge-to-edge background. Sits behind everything so the bg color
+          extends under the iOS notch / home-indicator areas, while the
+          display-root above respects safe-area insets so text content
+          stays out of those obstructions. */}
+      <div className="bg-layer" aria-hidden style={{ background: bg }} />
+
       <div className="display-root" onClick={onCanvasClick}>
         <div style={transformStyle ?? { width: '100%', height: '100%' }}>
           {mode === 'static' ? <StaticDisplay /> : <MarqueeDisplay />}

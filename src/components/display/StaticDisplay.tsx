@@ -1,6 +1,5 @@
 import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSettings } from '../../store/settingsStore';
-import { colorToCss } from '../../lib/colorToCss';
 import { GradientDef, fillFor } from '../../lib/colorToSvg';
 import {
   FONT_FAMILY,
@@ -19,14 +18,12 @@ type BBox = { x: number; y: number; w: number; h: number };
 export function StaticDisplay() {
   const text = useSettings((s) => s.text);
   const textColor = useSettings((s) => s.textColor);
-  const bgColor = useSettings((s) => s.bgColor);
   const margin = useSettings((s) => s.margin);
   const fontWeight = useSettings((s) => s.fontWeight);
 
   const reactId = useId();
   const gradId = `text-grad-${reactId.replace(/:/g, '')}`;
   const fill = fillFor(textColor, gradId);
-  const bg = colorToCss(bgColor);
 
   const lines = useMemo(() => {
     const split = text.split('\n');
@@ -87,7 +84,6 @@ export function StaticDisplay() {
       style={{
         width: '100%',
         height: '100%',
-        background: bg,
         display: 'grid',
         placeItems: 'center',
         overflow: 'hidden',
