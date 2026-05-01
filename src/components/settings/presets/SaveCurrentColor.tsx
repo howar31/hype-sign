@@ -1,26 +1,31 @@
 import { useState } from 'react';
 import { useSettings } from '../../../store/settingsStore';
 import { useT } from '../../../lib/i18n';
-import { PresetItem } from './PresetItem';
+import type { ColorValue } from '../../../types';
 
-export function PresetManager() {
-  const presets = useSettings((s) => s.presets);
+type Props = {
+  /** The current color value to snapshot when the user clicks save. */
+  color: ColorValue;
+};
+
+/**
+ * Save form for capturing the active color editor's value as a new color
+ * preset. One of these lives at the bottom of the Tint and Backdrop tabs;
+ * both write to the same shared `presets` list.
+ */
+export function SaveCurrentColor({ color }: Props) {
   const savePreset = useSettings((s) => s.savePreset);
-  const applyPreset = useSettings((s) => s.applyPreset);
-  const deletePreset = useSettings((s) => s.deletePreset);
   const t = useT();
-
   const [name, setName] = useState('');
 
   function onSave() {
-    savePreset(name);
+    savePreset(name, color);
     setName('');
   }
 
   return (
     <div className="section">
-      <span className="section-label">{t('colorPreset.section')}</span>
-
+      <span className="section-label">{t('preset.saveCurrent')}</span>
       <div className="row">
         <input
           type="text"
@@ -45,21 +50,6 @@ export function PresetManager() {
           {t('preset.save')}
         </button>
       </div>
-
-      {presets.length === 0 ? (
-        <span className="muted">{t('preset.empty')}</span>
-      ) : (
-        <div className="preset-list">
-          {presets.map((p) => (
-            <PresetItem
-              key={p.id}
-              preset={p}
-              onApply={() => applyPreset(p.id)}
-              onDelete={() => deletePreset(p.id)}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

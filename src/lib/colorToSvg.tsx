@@ -24,19 +24,26 @@ export function GradientDef({ color, id }: Props) {
   if (color.type === 'solid') return null;
 
   if (color.type === 'linear') {
-    // Convert CSS angle (0deg = up, increases clockwise) into SVG x1/y1/x2/y2
-    // on a unit square. SVG y increases downward, but objectBoundingBox treats
-    // (0,0) as top-left, which matches CSS gradient orientation when we
-    // compute the unit vector below.
-    const rad = ((color.angle - 90) * Math.PI) / 180; // 0deg should point up
-    const dx = Math.cos(rad);
-    const dy = Math.sin(rad);
-    // Center the gradient line at (0.5, 0.5) and project ±0.5 along (dx, dy)
-    // so that angle=0 gives bottom→top, matching CSS.
+    // Match CSS convention: 0deg points up, increases clockwise. The
+    // gradient line runs along that direction; the first stop sits at
+    // the start (opposite the direction) and the last stop at the end.
+    //
+    // Direction vector in y-down coords (same as SVG / CSS pixel space):
+    //   dx = sin(θ), dy = -cos(θ)
+    //   θ=0   → ( 0, -1)  up        (start at bottom, end at top)
+    //   θ=90  → ( 1,  0)  right
+    //   θ=180 → ( 0,  1)  down
+    //   θ=270 → (-1,  0)  left
+    //
+    // With objectBoundingBox, (0,0)=top-left, (1,1)=bottom-right. We
+    // center the line at (0.5, 0.5) and project ±0.5 along the direction.
+    const rad = (color.angle * Math.PI) / 180;
+    const dx = Math.sin(rad);
+    const dy = -Math.cos(rad);
     const x1 = 0.5 - dx * 0.5;
-    const y1 = 0.5 + dy * 0.5;
+    const y1 = 0.5 - dy * 0.5;
     const x2 = 0.5 + dx * 0.5;
-    const y2 = 0.5 - dy * 0.5;
+    const y2 = 0.5 + dy * 0.5;
 
     return (
       <linearGradient

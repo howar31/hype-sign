@@ -16,7 +16,10 @@ See [SPEC.md](SPEC.md).
 - All persisted state goes through `useSettings` (zustand + persist, key `hype-sign:v1`). Don't read/write localStorage directly.
 - Colors follow the `ColorValue` discriminated union — solid / linear / radial. CSS rendering via `colorToCss`; SVG fill via `<GradientDef>` + `fillFor`.
 - Text rendering in `StaticDisplay` uses SVG `getBBox()` to derive the viewBox; never use `dominant-baseline="hanging"` (Safari clips it in landscape).
-- Drawer settings are tabbed: each tab is one component in `src/components/settings/sections/`.
+- Drawer settings are tabbed (4 tabs: Text / Tint / Backdrop / Settings); each tab is one component in `src/components/settings/sections/`. All tab sections render unconditionally — visibility toggles via the `hidden` attribute so per-section local state (ColorEditor snapshots, preset name inputs, ConfirmButton armed state) survives tab switches.
+- `Preset` is a single-color snapshot `{ name, color }`; the same preset can be applied to either text or background via `applyPresetToText` / `applyPresetToBg`. Persist version is 2 — old `{textColor, bgColor}` pairs are migrated by splitting into two single-color presets.
+- Resetting tint and backdrop are independent: each color section owns a `resetCounter` whose React `key` bumps the local ColorEditor so the per-type snapshots (solid/linear/radial) re-derive from the reset value. Don't add a global "reset both" action.
+- Linear gradient angle in `colorToSvg.tsx` uses `dx=sin(θ), dy=-cos(θ)` so SVG-rendered tint and CSS-rendered backdrop match at the same angle — see SPEC.md for the math.
 - Floating settings button visibility is local state in `App.tsx`; tapping the canvas (`.display-root` onClick) toggles it. Hidden state uses CSS class `.hidden` (opacity 0 + `pointer-events: none`) so taps fall through to the canvas.
 - Destructive UI actions (reset, delete, clear) use `ConfirmButton variant="danger"` — red armed state. Non-destructive but irreversible-feeling actions (apply preset) use `variant="neutral"` — blue armed state. Never use `alert()` / `confirm()` / native dialogs.
 - Chinese terminology: user-saved snapshots are 「樣板」 (templates), not 「預設」 (which means "default" in zh-TW and is ambiguous). English stays "preset".

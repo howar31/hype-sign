@@ -28,8 +28,7 @@ export type Rotation = 0 | 90 | 180 | 270;
 export type Preset = {
   id: string;
   name: string;
-  textColor: ColorValue;
-  bgColor: ColorValue;
+  color: ColorValue;
 };
 
 export type TextPreset = {

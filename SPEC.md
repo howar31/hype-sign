@@ -23,7 +23,7 @@ src/
 ├── App.tsx                               root: rotation transform + display + toggle button + drawer
 ├── types.ts                              ColorValue, Settings, Preset, TextPreset, DEFAULT_*
 ├── store/
-│   └── settingsStore.ts                  single zustand store; persist key "hype-sign:v1"
+│   └── settingsStore.ts                  single zustand store; persist key "hype-sign:v1", version 2
 ├── lib/
 │   ├── colorToCss.ts                     ColorValue → CSS background string
 │   ├── colorToSvg.tsx                    ColorValue → <linearGradient>/<radialGradient> defs
@@ -38,22 +38,25 @@ src/
 │   │   ├── StaticDisplay.tsx             auto-fit multi-line via SVG + getBBox viewBox
 │   │   └── MarqueeDisplay.tsx            single-line scroller via requestAnimationFrame
 │   ├── settings/
-│   │   ├── SettingsPanel.tsx             drawer + 3 tabs (Text / Style / Other)
+│   │   ├── SettingsPanel.tsx             drawer + 4 tabs (Text / Tint / Backdrop / Settings)
 │   │   ├── sections/
-│   │   │   ├── TextSection.tsx           TextInput + ModeToggle + SpeedSlider + TextPresetManager
-│   │   │   ├── StyleSection.tsx          two ColorEditor + PresetManager + ResetButton
+│   │   │   ├── TextSection.tsx           TextInput + ModeToggle + SpeedSlider + TextPresetManager + ClearTextButton
+│   │   │   ├── TextColorSection.tsx      ColorEditor (text) + SaveCurrentColor + ColorPresetList(text) + ResetColorButton(tint)
+│   │   │   ├── BackgroundColorSection.tsx ColorEditor (bg) + SaveCurrentColor + ColorPresetList(bg) + ResetColorButton(bg)
 │   │   │   └── OtherSection.tsx          RotateButton + FullscreenButton + LanguageToggle
 │   │   ├── TextInput.tsx · ModeToggle.tsx · SpeedSlider.tsx · RotateButton.tsx
-│   │   ├── FullscreenButton.tsx · LanguageToggle.tsx · ResetButton.tsx
+│   │   ├── FullscreenButton.tsx · LanguageToggle.tsx · ClearTextButton.tsx · ResetColorButton.tsx
 │   │   ├── color/
-│   │   │   ├── ColorEditor.tsx           tabs: solid / linear / radial
+│   │   │   ├── ColorEditor.tsx           tabs: solid / linear / radial; per-type snapshots
 │   │   │   ├── SolidPicker.tsx
 │   │   │   ├── LinearEditor.tsx          angle slider + StopList
 │   │   │   ├── RadialEditor.tsx          cx/cy pad picker + StopList
-│   │   │   └── StopList.tsx              dynamic add/remove/edit color stops
+│   │   │   └── StopList.tsx              dynamic add/remove (ConfirmButton)/edit color stops
 │   │   └── presets/
-│   │       ├── PresetManager.tsx         color preset (textColor + bgColor)
-│   │       ├── PresetItem.tsx
+│   │       ├── SaveCurrentColor.tsx      save current color in active editor as a single-color preset
+│   │       ├── ColorPresetList.tsx       shared preset list; applyTo prop chooses tint vs backdrop
+│   │       ├── PresetItem.tsx            swatch + ColorTypeIcon + name + apply/delete
+│   │       ├── ColorTypeIcon.tsx         14×14 type glyph (solid / linear / radial) with hover+tap tooltip
 │   │       ├── TextPresetManager.tsx     text-content preset
 │   │       └── TextPresetItem.tsx
 │   └── ui/
@@ -84,9 +87,11 @@ type Settings = {
   lang: Lang;
 };
 
-type Preset     = { id; name; textColor; bgColor };  // color preset
-type TextPreset = { id; name; text };                // text-content preset
+type Preset     = { id; name; color: ColorValue }; // single-color preset (was {textColor,bgColor} pair before persist v2)
+type TextPreset = { id; name; text };              // text-content preset
 ```
+
+Persisted under `hype-sign:v1` / version 2. v1 → v2 migration in `settingsStore.ts` splits each old `{textColor, bgColor}` preset into two single-color presets named `…(字)` and `…(底)` so user data isn't lost.
 
 `DEFAULT_SETTINGS` ships text=`'HYPE\nSIGN'`, white-on-black, static mode, 400 px/s, no rotation, zh-TW.
 
@@ -99,9 +104,9 @@ Single zustand store, all actions live here; components only `useSettings(s => s
 | `setText`, `setTextColor`, `setBgColor`, `setMode`, `setMarqueeSpeed`, `setRotation`, `setLang` | Trivial setters |
 | `setMarqueeSpeed` | Clamps to `[MIN_SPEED, MAX_SPEED]` and rounds |
 | `cycleRotation` | 0 → 90 → 180 → 270 → 0 |
-| `resetColors` | Sets `textColor`/`bgColor` back to defaults; everything else preserved |
-| `savePreset(name)` | Snapshot current colors as a `Preset`, append |
-| `applyPreset(id)` | Restore both `textColor` and `bgColor` from preset |
+| `resetTextColor` / `resetBgColor` | Set the named color back to its default (white text / black bg). The two are independent — resetting tint never touches backdrop |
+| `savePreset(name, color)` | Append a single-color `Preset` from the explicit `color` argument (the active editor passes its current `textColor` or `bgColor`) |
+| `applyPresetToText(id)` / `applyPresetToBg(id)` | Restore the chosen preset onto either side. The preset itself is type-agnostic; the apply target is decided by which color tab the user is in |
 | `deletePreset(id)`, `renamePreset(id, name)` | Standard |
 | `saveTextPreset(name)` | Snapshot current `text` as a `TextPreset` (no-op if text is blank) |
 | `applyTextPreset(id)` | Restore `text` only |
@@ -132,16 +137,21 @@ Single-line continuous scroller at constant pixels-per-second.
 
 ### Color → SVG (`src/lib/colorToSvg.tsx`)
 
-`<GradientDef>` emits either nothing (solid), `<linearGradient>`, or `<radialGradient>` with `gradientUnits="objectBoundingBox"`. Linear angle is converted from CSS convention (0° = up, clockwise) into unit-square endpoints.
+`<GradientDef>` emits either nothing (solid), `<linearGradient>`, or `<radialGradient>` with `gradientUnits="objectBoundingBox"`. Linear angle follows CSS convention (0° = up, clockwise) and is converted to a unit-square direction vector — `dx = sin(θ)`, `dy = -cos(θ)` — then projected ±0.5 from the center to get the gradient endpoints. This matches the CSS rendering used for backgrounds: tint (SVG-rendered) and backdrop (CSS-rendered) at the same angle look identical.
 
 ## Settings panel
 
-Drawer with three tabs:
-- **Text** — text input, mode toggle, marquee-speed slider (when mode=marquee), text presets, clear-text button (mirrors the visual position of reset-colors in Style tab)
-- **Style** — text-color editor, background-color editor, color presets, reset-colors button
-- **Other** — rotate 90° cycle, fullscreen, language toggle
+Drawer with four tabs (in order):
+- **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), text presets, clear-text button at end
+- **Tint** (`字色`) — text-color editor, save-current-color form, shared color preset list (apply hits text), reset-tint button at end
+- **Backdrop** (`底色`) — background-color editor, save-current-color form, shared color preset list (apply hits bg), reset-backdrop button at end
+- **Settings** (`設定`) — rotate 90° cycle, fullscreen, language toggle
 
-`ClearTextButton` and `ResetButton` are visually identical (same section + danger ConfirmButton at the bottom of their tab) — clearing text and resetting colors are the two scoped destructive actions, parallel by design. Both are disabled / no-op when there's nothing to act on.
+`ClearTextButton`, `ResetColorButton(tint)`, and `ResetColorButton(bg)` all live at the bottom of their respective tabs as identical-looking danger ConfirmButtons. The two color-reset buttons are independent: resetting tint clears textColor and re-derives the ColorEditor's solid/linear/radial snapshots via a `key` bump, but does not touch backdrop's snapshots, and vice versa.
+
+The shared `ColorPresetList` is rendered in both color tabs but takes an `applyTo: 'text' | 'bg'` prop so the apply button knows which side to write to. The preset itself is just `{ name, color }` — there is no "preset is for text" vs "preset is for bg" distinction in storage.
+
+`ColorTypeIcon` (next to each preset's swatch) renders a tiny 14×14 glyph for solid / linear / radial. Tooltip: native `:hover` for desktop, plus a React-state-driven tap tooltip that auto-dismisses after ~2s for touch devices.
 
 Tab state is local (`useState`) — not persisted across sessions; defaults to `text`.
 
@@ -235,8 +245,12 @@ To fork to a different repo name: change `base` in `vite.config.ts` and `start_u
 ## Things to be careful about when extending
 
 - **Persisted state**: any new setting must be added to `partialize` in the store, otherwise it won't survive reload.
+- **Migration**: any breaking change to a persisted shape must bump `version` and add a `migrate` step (see the v1 → v2 preset split for the pattern).
 - **i18n**: every new user-visible string needs a key in both ZH and EN dicts.
-- **Color editor**: when adding a new gradient type, update `ColorValue` union + `colorToCss` + `colorToSvg.GradientDef` + `ColorEditor.selectType` (preserve stops when switching types).
+- **Color editor**: when adding a new gradient type, update `ColorValue` union + `colorToCss` + `colorToSvg.GradientDef` + `ColorEditor.selectType` + `ColorEditor.deriveSnapshots` + `ColorTypeIcon` glyph + i18n `color.type.*` labels.
+- **Color editor snapshots**: `ColorEditor` keeps per-type local snapshots so users don't lose their angle / cx-cy / stops when switching solid↔linear↔radial. The parent (`TextColorSection` / `BackgroundColorSection`) owns a `resetCounter` whose value is passed as React `key`; bumping it remounts the editor and re-derives all three snapshots from the freshly reset value.
+- **All-mounted tabs**: `SettingsPanel` renders every tab's section unconditionally and toggles visibility via the `hidden` attribute. This is what makes ColorEditor snapshots, preset name inputs, and other local UI state survive tab switches. Don't fall back to `tab === 'x' && <Section />`.
 - **getBBox in StaticDisplay**: the `useLayoutEffect` dep array includes `text`, `fontSize`, `lineHeight`, `lines.length` — if you add new factors that affect rendering, include them too or measurements go stale.
 - **Don't reintroduce `dominant-baseline="hanging"`** — it clips on iOS Safari in landscape.
 - **Don't add `inset` left-edge `box-shadow` to `.drawer`** — iOS Safari leaks it through the `box-shadow: none` mobile media-query override, leaving a visible 1px white line on the left edge of the drawer. If you need a desktop edge highlight, use `border-left` (it's already removed cleanly on mobile).
+- **Linear gradient angle in SVG** must use the `dx = sin(θ), dy = -cos(θ)` convention so that tint (SVG-rendered) and backdrop (CSS-rendered) look identical at the same angle. The earlier `(angle - 90)` formulation was off by 180° — don't reintroduce it.

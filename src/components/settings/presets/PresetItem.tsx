@@ -2,6 +2,7 @@ import { colorToCss } from '../../../lib/colorToCss';
 import { useT } from '../../../lib/i18n';
 import type { Preset } from '../../../types';
 import { ConfirmButton } from '../../ui/ConfirmButton';
+import { ColorTypeIcon } from './ColorTypeIcon';
 
 type Props = {
   preset: Preset;
@@ -11,13 +12,15 @@ type Props = {
 
 export function PresetItem({ preset, onApply, onDelete }: Props) {
   const t = useT();
+  const typeLabel = t(`color.type.${preset.color.type}`);
+
   return (
     <div className="preset-row">
       <div className="preset-name">
         <div className="preset-swatches" aria-hidden>
-          <div style={{ background: colorToCss(preset.bgColor) }} />
-          <div style={{ background: colorToCss(preset.textColor) }} />
+          <div style={{ background: colorToCss(preset.color) }} />
         </div>
+        <ColorTypeIcon type={preset.color.type} label={typeLabel} />
         <span className="preset-name-text">{preset.name}</span>
       </div>
       <ConfirmButton

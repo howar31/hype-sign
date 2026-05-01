@@ -10,8 +10,11 @@ const ZH: Dict = {
   'settings.close': '關閉',
 
   'tab.text': '文字',
-  'tab.style': '樣式',
-  'tab.other': '其他',
+  'tab.tint': '字色',
+  'tab.backdrop': '底色',
+  'tab.settings': '設定',
+
+  'preset.saveCurrent': '儲存目前顏色',
 
   'mode.label': '顯示模式',
   'mode.static': '固定顯示',
@@ -38,6 +41,9 @@ const ZH: Dict = {
   'color.solid': '純色',
   'color.linear': '線性漸層',
   'color.radial': '圓形漸層',
+  'color.type.solid': '純色',
+  'color.type.linear': '線性',
+  'color.type.radial': '圓形',
 
   'gradient.angle': '角度',
   'gradient.center': '中心點',
@@ -47,6 +53,7 @@ const ZH: Dict = {
   'gradient.position': '位置',
 
   'colorPreset.section': '顏色樣板',
+  'colorPreset.list': '已儲存的顏色樣板',
   'textPreset.section': '文字樣板',
   'preset.empty': '尚未儲存任何樣板',
   'preset.namePlaceholder': '樣板名稱（可留白）',
@@ -56,8 +63,10 @@ const ZH: Dict = {
   'preset.delete': '刪除',
   'preset.deleteConfirm': '再點一次確認',
 
-  'reset.label': '重置顏色',
-  'reset.button': '重置為黑底白字',
+  'reset.tint.label': '重置字色',
+  'reset.tint.button': '重置字色全部設定（純色 / 線性 / 圓形）',
+  'reset.bg.label': '重置底色',
+  'reset.bg.button': '重置底色全部設定（純色 / 線性 / 圓形）',
   'reset.confirm': '再點一次確認重置',
 
   'clear.label': '清除文字',
@@ -72,8 +81,11 @@ const EN: Dict = {
   'settings.close': 'Close',
 
   'tab.text': 'Text',
-  'tab.style': 'Style',
-  'tab.other': 'Other',
+  'tab.tint': 'Tint',
+  'tab.backdrop': 'Backdrop',
+  'tab.settings': 'Settings',
+
+  'preset.saveCurrent': 'Save current color',
 
   'mode.label': 'Display mode',
   'mode.static': 'Static',
@@ -100,6 +112,9 @@ const EN: Dict = {
   'color.solid': 'Solid',
   'color.linear': 'Linear',
   'color.radial': 'Radial',
+  'color.type.solid': 'Solid',
+  'color.type.linear': 'Linear',
+  'color.type.radial': 'Radial',
 
   'gradient.angle': 'Angle',
   'gradient.center': 'Center',
@@ -109,6 +124,7 @@ const EN: Dict = {
   'gradient.position': 'Position',
 
   'colorPreset.section': 'Color presets',
+  'colorPreset.list': 'Saved color presets',
   'textPreset.section': 'Text presets',
   'preset.empty': 'Nothing saved yet',
   'preset.namePlaceholder': 'Name (optional)',
@@ -118,8 +134,10 @@ const EN: Dict = {
   'preset.delete': 'Delete',
   'preset.deleteConfirm': 'Tap again to confirm',
 
-  'reset.label': 'Reset colors',
-  'reset.button': 'Reset to white on black',
+  'reset.tint.label': 'Reset tint',
+  'reset.tint.button': 'Reset all tint settings (solid / linear / radial)',
+  'reset.bg.label': 'Reset backdrop',
+  'reset.bg.button': 'Reset all backdrop settings (solid / linear / radial)',
   'reset.confirm': 'Tap again to confirm',
 
   'clear.label': 'Clear text',

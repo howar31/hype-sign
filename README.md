@@ -33,15 +33,18 @@ Requires Node 20 or newer.
 
 ## Settings panel
 
-The drawer is split into three tabs to keep things scannable:
+The drawer is split into four tabs to keep things scannable:
 
 | Tab | Contents |
 |---|---|
-| Text | text input · static/marquee mode · marquee speed · text presets |
-| Style | text color · background color · color presets · reset colors |
-| Other | rotate 90° · fullscreen · language |
+| Text | text input · static/marquee mode · marquee speed · text presets · clear text |
+| Tint | text-color editor · save current color · shared color presets (apply to text) · reset tint |
+| Backdrop | background-color editor · save current color · shared color presets (apply to bg) · reset backdrop |
+| Settings | rotate 90° · fullscreen · language |
 
-Reset only resets colors — it never touches your text, mode, speed, or rotation. Destructive actions (reset, preset delete, text clear) confirm by tapping twice — no popup dialog. Applying a saved preset also asks for a second tap before overwriting your current colors / text.
+Color presets are single-color snapshots: a preset stores **one** ColorValue (solid / linear / radial) and you decide at apply-time whether it goes onto the text or the background. Both color tabs share the same preset list. Each preset row shows a tiny type icon next to the swatch (with hover/tap tooltip) so you can tell solid / linear / radial apart even when a multi-stop gradient renders too small.
+
+Reset is per-color: resetting tint clears the text color across all three types (solid + linear + radial) but leaves backdrop alone, and vice versa. Destructive actions (reset, preset delete, text clear) confirm by tapping twice — no popup dialog. Applying a saved preset also asks for a second tap before overwriting your current color.
 
 Saved snapshots are called 「樣板」 (templates) in the Chinese UI, not 「預設」, since the latter is the standard zh-TW word for "default" and would be confusing.
 

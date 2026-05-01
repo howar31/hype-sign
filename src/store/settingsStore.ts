@@ -30,9 +30,11 @@ type Actions = {
   setRotation: (r: Rotation) => void;
   cycleRotation: () => void;
   setLang: (lang: Lang) => void;
-  resetColors: () => void;
-  savePreset: (name: string) => void;
-  applyPreset: (id: string) => void;
+  resetTextColor: () => void;
+  resetBgColor: () => void;
+  savePreset: (name: string, color: ColorValue) => void;
+  applyPresetToText: (id: string) => void;
+  applyPresetToBg: (id: string) => void;
   deletePreset: (id: string) => void;
   renamePreset: (id: string, name: string) => void;
   saveTextPreset: (name: string) => void;
@@ -62,24 +64,27 @@ export const useSettings = create<State & Actions>()(
         set({ rotation: next });
       },
       setLang: (lang) => set({ lang }),
-      resetColors: () => {
-        set({ textColor: DEFAULT_TEXT_COLOR, bgColor: DEFAULT_BG_COLOR });
-      },
+      resetTextColor: () => set({ textColor: DEFAULT_TEXT_COLOR }),
+      resetBgColor: () => set({ bgColor: DEFAULT_BG_COLOR }),
 
-      savePreset: (name) => {
-        const { textColor, bgColor, presets } = get();
+      savePreset: (name, color) => {
+        const { presets } = get();
         const preset: Preset = {
           id: makeId(),
           name: name.trim() || `Preset ${presets.length + 1}`,
-          textColor,
-          bgColor,
+          color,
         };
         set({ presets: [...presets, preset] });
       },
-      applyPreset: (id) => {
+      applyPresetToText: (id) => {
         const p = get().presets.find((x) => x.id === id);
         if (!p) return;
-        set({ textColor: p.textColor, bgColor: p.bgColor });
+        set({ textColor: p.color });
+      },
+      applyPresetToBg: (id) => {
+        const p = get().presets.find((x) => x.id === id);
+        if (!p) return;
+        set({ bgColor: p.color });
       },
       deletePreset: (id) => {
         set({ presets: get().presets.filter((x) => x.id !== id) });
@@ -111,7 +116,40 @@ export const useSettings = create<State & Actions>()(
     }),
     {
       name: 'hype-sign:v1',
-      version: 1,
+      version: 2,
+      // v1 → v2: presets used to be { textColor, bgColor } pairs. Split each
+      // pair into two single-color presets so the new preset model works.
+      migrate: (persisted, version) => {
+        const s = persisted as Partial<State> & {
+          presets?: Array<Partial<Preset> & { textColor?: ColorValue; bgColor?: ColorValue }>;
+        };
+        if (version < 2 && Array.isArray(s.presets)) {
+          const next: Preset[] = [];
+          for (const p of s.presets) {
+            if (p.color) {
+              next.push({ id: p.id ?? makeId(), name: p.name ?? '', color: p.color });
+              continue;
+            }
+            const baseName = p.name ?? '';
+            if (p.textColor) {
+              next.push({
+                id: makeId(),
+                name: baseName ? `${baseName} (字)` : '字色',
+                color: p.textColor,
+              });
+            }
+            if (p.bgColor) {
+              next.push({
+                id: makeId(),
+                name: baseName ? `${baseName} (底)` : '底色',
+                color: p.bgColor,
+              });
+            }
+          }
+          s.presets = next;
+        }
+        return s as State;
+      },
       partialize: (s) => ({
         text: s.text,
         textColor: s.textColor,

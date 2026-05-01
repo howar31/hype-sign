@@ -1,5 +1,6 @@
 import { useT } from '../../../lib/i18n';
 import { makeId, type ColorStop } from '../../../types';
+import { ConfirmButton } from '../../ui/ConfirmButton';
 
 type Props = {
   stops: ColorStop[];
@@ -85,16 +86,16 @@ export function StopList({ stops, onChange, previewCss }: Props) {
               updateStop(s.id, { position: v });
             }}
           />
-          <button
-            type="button"
-            className="btn icon"
+          <ConfirmButton
+            confirmLabel="?"
+            onConfirm={() => removeStop(s.id)}
             disabled={stops.length <= MIN_STOPS}
-            onClick={() => removeStop(s.id)}
-            aria-label={t('gradient.remove')}
-            title={t('gradient.remove')}
+            className="icon"
+            style={{ height: 32, width: 32 }}
+            ariaLabel={t('gradient.remove')}
           >
             ✕
-          </button>
+          </ConfirmButton>
         </div>
       ))}
     </div>
