@@ -1,34 +1,24 @@
-import { useEffect } from 'react';
-import { useSettings } from '../../store/settingsStore';
+import { useEffect, useState } from 'react';
 import { useT } from '../../lib/i18n';
 import { useWakeLock } from '../../hooks/useWakeLock';
-import { TextInput } from './TextInput';
-import { ModeToggle } from './ModeToggle';
-import { SpeedSlider } from './SpeedSlider';
-import { RotateButton } from './RotateButton';
-import { LanguageToggle } from './LanguageToggle';
-import { FullscreenButton } from './FullscreenButton';
-import { ResetButton } from './ResetButton';
-import { ColorEditor } from './color/ColorEditor';
-import { PresetManager } from './presets/PresetManager';
+import { TextSection } from './sections/TextSection';
+import { StyleSection } from './sections/StyleSection';
+import { OtherSection } from './sections/OtherSection';
 
 type Props = {
   open: boolean;
   onClose: () => void;
 };
 
+type Tab = 'text' | 'style' | 'other';
+
 export function SettingsPanel({ open, onClose }: Props) {
   const t = useT();
-  const mode = useSettings((s) => s.mode);
-  const textColor = useSettings((s) => s.textColor);
-  const bgColor = useSettings((s) => s.bgColor);
-  const setTextColor = useSettings((s) => s.setTextColor);
-  const setBgColor = useSettings((s) => s.setBgColor);
+  const [tab, setTab] = useState<Tab>('text');
 
-  // Keep screen awake whenever the app is visible.
+  // Keep screen awake whenever the app is mounted.
   useWakeLock(true);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -58,33 +48,40 @@ export function SettingsPanel({ open, onClose }: Props) {
           </button>
         </header>
 
+        <nav className="drawer-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'text'}
+            className={tab === 'text' ? 'active' : ''}
+            onClick={() => setTab('text')}
+          >
+            {t('tab.text')}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'style'}
+            className={tab === 'style' ? 'active' : ''}
+            onClick={() => setTab('style')}
+          >
+            {t('tab.style')}
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'other'}
+            className={tab === 'other' ? 'active' : ''}
+            onClick={() => setTab('other')}
+          >
+            {t('tab.other')}
+          </button>
+        </nav>
+
         <div className="drawer-body">
-          <TextInput />
-          <ModeToggle />
-          {mode === 'marquee' && <SpeedSlider />}
-
-          <ColorEditor
-            label={t('color.text')}
-            value={textColor}
-            onChange={setTextColor}
-            defaultSolid="#ffffff"
-          />
-          <ColorEditor
-            label={t('color.bg')}
-            value={bgColor}
-            onChange={setBgColor}
-            defaultSolid="#000000"
-          />
-
-          <PresetManager />
-
-          <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
-            <RotateButton />
-            <FullscreenButton />
-          </div>
-
-          <LanguageToggle />
-          <ResetButton />
+          {tab === 'text' && <TextSection />}
+          {tab === 'style' && <StyleSection />}
+          {tab === 'other' && <OtherSection />}
         </div>
       </aside>
     </>

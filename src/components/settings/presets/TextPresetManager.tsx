@@ -1,25 +1,27 @@
 import { useState } from 'react';
 import { useSettings } from '../../../store/settingsStore';
 import { useT } from '../../../lib/i18n';
-import { PresetItem } from './PresetItem';
+import { TextPresetItem } from './TextPresetItem';
 
-export function PresetManager() {
-  const presets = useSettings((s) => s.presets);
-  const savePreset = useSettings((s) => s.savePreset);
-  const applyPreset = useSettings((s) => s.applyPreset);
-  const deletePreset = useSettings((s) => s.deletePreset);
+export function TextPresetManager() {
+  const text = useSettings((s) => s.text);
+  const textPresets = useSettings((s) => s.textPresets);
+  const saveTextPreset = useSettings((s) => s.saveTextPreset);
+  const applyTextPreset = useSettings((s) => s.applyTextPreset);
+  const deleteTextPreset = useSettings((s) => s.deleteTextPreset);
   const t = useT();
 
   const [name, setName] = useState('');
 
   function onSave() {
-    savePreset(name);
+    if (!text.trim()) return;
+    saveTextPreset(name);
     setName('');
   }
 
   return (
     <div className="section">
-      <span className="section-label">{t('colorPreset.section')}</span>
+      <span className="section-label">{t('textPreset.section')}</span>
 
       <div className="row">
         <input
@@ -40,22 +42,23 @@ export function PresetManager() {
           type="button"
           className="btn primary"
           onClick={onSave}
+          disabled={!text.trim()}
           style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
         >
           {t('preset.save')}
         </button>
       </div>
 
-      {presets.length === 0 ? (
+      {textPresets.length === 0 ? (
         <span className="muted">{t('preset.empty')}</span>
       ) : (
         <div className="preset-list">
-          {presets.map((p) => (
-            <PresetItem
+          {textPresets.map((p) => (
+            <TextPresetItem
               key={p.id}
               preset={p}
-              onApply={() => applyPreset(p.id)}
-              onDelete={() => deletePreset(p.id)}
+              onApply={() => applyTextPreset(p.id)}
+              onDelete={() => deleteTextPreset(p.id)}
             />
           ))}
         </div>

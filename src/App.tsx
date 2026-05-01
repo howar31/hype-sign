@@ -38,7 +38,18 @@ export function App() {
         aria-label="Open settings"
         onClick={() => setOpen(true)}
       >
-        ⚙
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M4 7h16M4 12h16M4 17h16"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+          <circle cx="17" cy="7" r="2.6" fill="currentColor" />
+          <circle cx="8" cy="12" r="2.6" fill="currentColor" />
+          <circle cx="15" cy="17" r="2.6" fill="currentColor" />
+        </svg>
       </button>
 
       <SettingsPanel open={open} onClose={() => setOpen(false)} />

@@ -32,6 +32,12 @@ export type Preset = {
   bgColor: ColorValue;
 };
 
+export type TextPreset = {
+  id: string;
+  name: string;
+  text: string;
+};
+
 export type Settings = {
   text: string;
   textColor: ColorValue;

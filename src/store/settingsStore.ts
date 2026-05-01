@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {
+  DEFAULT_BG_COLOR,
   DEFAULT_SETTINGS,
+  DEFAULT_TEXT_COLOR,
   MAX_SPEED,
   MIN_SPEED,
   makeId,
@@ -11,10 +13,12 @@ import {
   type Preset,
   type Rotation,
   type Settings,
+  type TextPreset,
 } from '../types';
 
 type State = Settings & {
   presets: Preset[];
+  textPresets: TextPreset[];
 };
 
 type Actions = {
@@ -26,11 +30,14 @@ type Actions = {
   setRotation: (r: Rotation) => void;
   cycleRotation: () => void;
   setLang: (lang: Lang) => void;
-  resetSettings: () => void;
+  resetColors: () => void;
   savePreset: (name: string) => void;
   applyPreset: (id: string) => void;
   deletePreset: (id: string) => void;
   renamePreset: (id: string, name: string) => void;
+  saveTextPreset: (name: string) => void;
+  applyTextPreset: (id: string) => void;
+  deleteTextPreset: (id: string) => void;
 };
 
 const ROTATION_CYCLE: Rotation[] = [0, 90, 180, 270];
@@ -40,6 +47,7 @@ export const useSettings = create<State & Actions>()(
     (set, get) => ({
       ...DEFAULT_SETTINGS,
       presets: [],
+      textPresets: [],
 
       setText: (text) => set({ text }),
       setTextColor: (textColor) => set({ textColor }),
@@ -54,10 +62,8 @@ export const useSettings = create<State & Actions>()(
         set({ rotation: next });
       },
       setLang: (lang) => set({ lang }),
-      resetSettings: () => {
-        // Keep lang and presets; reset everything else.
-        const { lang, presets } = get();
-        set({ ...DEFAULT_SETTINGS, lang, presets });
+      resetColors: () => {
+        set({ textColor: DEFAULT_TEXT_COLOR, bgColor: DEFAULT_BG_COLOR });
       },
 
       savePreset: (name) => {
@@ -83,6 +89,25 @@ export const useSettings = create<State & Actions>()(
           presets: get().presets.map((x) => (x.id === id ? { ...x, name } : x)),
         });
       },
+
+      saveTextPreset: (name) => {
+        const { text, textPresets } = get();
+        if (!text.trim()) return;
+        const preset: TextPreset = {
+          id: makeId(),
+          name: name.trim(),
+          text,
+        };
+        set({ textPresets: [...textPresets, preset] });
+      },
+      applyTextPreset: (id) => {
+        const p = get().textPresets.find((x) => x.id === id);
+        if (!p) return;
+        set({ text: p.text });
+      },
+      deleteTextPreset: (id) => {
+        set({ textPresets: get().textPresets.filter((x) => x.id !== id) });
+      },
     }),
     {
       name: 'hype-sign:v1',
@@ -96,6 +121,7 @@ export const useSettings = create<State & Actions>()(
         rotation: s.rotation,
         lang: s.lang,
         presets: s.presets,
+        textPresets: s.textPresets,
       }),
     },
   ),

@@ -1,15 +1,36 @@
 :root {
-  --panel-bg: #1a1a1a;
-  --panel-border: #2e2e2e;
-  --panel-text: #f2f2f2;
-  --panel-muted: #999;
-  --panel-accent: #4f8cff;
-  --panel-danger: #e44;
-  --panel-input-bg: #0e0e0e;
-  --panel-input-border: #3a3a3a;
-  --panel-width: 360px;
-  font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', sans-serif;
+  /* Liquid-glass palette — translucent surfaces over heavy backdrop blur. */
+  --glass-bg: rgba(22, 22, 26, 0.58);
+  --glass-bg-elev: rgba(255, 255, 255, 0.06);
+  --glass-bg-elev-hover: rgba(255, 255, 255, 0.1);
+  --glass-bg-sunken: rgba(0, 0, 0, 0.28);
+
+  --glass-stroke: rgba(255, 255, 255, 0.1);
+  --glass-stroke-strong: rgba(255, 255, 255, 0.2);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+
+  --text: rgba(255, 255, 255, 0.96);
+  --text-muted: rgba(255, 255, 255, 0.56);
+  --text-faint: rgba(255, 255, 255, 0.36);
+
+  --accent: #5a9bff;
+  --accent-soft: rgba(90, 155, 255, 0.18);
+  --danger: #ff5a5a;
+  --danger-soft: rgba(255, 90, 90, 0.22);
+
+  --panel-width: 380px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --blur-glass: blur(40px) saturate(180%);
+
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui,
+    'Segoe UI', 'Noto Sans TC', 'PingFang TC', sans-serif;
   color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -32,7 +53,7 @@ body,
 
 body {
   background: #000;
-  color: var(--panel-text);
+  color: var(--text);
 }
 
 button,
@@ -52,7 +73,9 @@ input[type='range'] {
   width: 100%;
 }
 
-/* Display container fills viewport */
+/* ---------------------------------------------------------------------------
+ * Display canvas
+ * ------------------------------------------------------------------------ */
 .display-root {
   position: fixed;
   inset: 0;
@@ -61,38 +84,54 @@ input[type='range'] {
   -webkit-user-select: none;
 }
 
-/* Floating settings toggle button */
+/* ---------------------------------------------------------------------------
+ * Floating glass toggle button
+ * ------------------------------------------------------------------------ */
 .settings-toggle {
   position: fixed;
-  top: env(safe-area-inset-top, 12px);
-  right: env(safe-area-inset-right, 12px);
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  font-size: 20px;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: calc(env(safe-area-inset-right, 0px) + 14px);
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-stroke);
+  background: rgba(20, 20, 24, 0.55);
+  color: var(--text);
   z-index: 50;
   display: grid;
   place-items: center;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 var(--glass-highlight);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 100ms ease;
 }
 
 .settings-toggle:hover {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(40, 40, 46, 0.65);
+  border-color: var(--glass-stroke-strong);
 }
 
-/* Settings drawer */
+.settings-toggle:active {
+  transform: scale(0.94);
+}
+
+/* ---------------------------------------------------------------------------
+ * Drawer
+ * ------------------------------------------------------------------------ */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.35);
   z-index: 90;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 180ms ease;
+  transition: opacity 220ms ease;
 }
 
 .drawer-backdrop.open {
@@ -107,15 +146,20 @@ input[type='range'] {
   bottom: 0;
   width: var(--panel-width);
   max-width: 100vw;
-  background: var(--panel-bg);
-  border-left: 1px solid var(--panel-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-left: 1px solid var(--glass-stroke);
   z-index: 100;
   transform: translateX(100%);
-  transition: transform 220ms ease;
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
   padding-top: env(safe-area-inset-top, 0);
   padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow:
+    -16px 0 48px rgba(0, 0, 0, 0.4),
+    inset 1px 0 0 var(--glass-highlight);
 }
 
 .drawer.open {
@@ -126,6 +170,7 @@ input[type='range'] {
   .drawer {
     width: 100vw;
     border-left: none;
+    box-shadow: none;
   }
 }
 
@@ -133,48 +178,101 @@ input[type='range'] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--panel-border);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--glass-stroke);
   flex-shrink: 0;
 }
 
 .drawer-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   margin: 0;
-}
-
-.drawer-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  letter-spacing: -0.01em;
 }
 
 .drawer-close {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--panel-border);
-  background: transparent;
-  color: var(--panel-text);
-  font-size: 18px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-stroke);
+  background: var(--glass-bg-elev);
+  color: var(--text);
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  transition: background-color 140ms ease, border-color 140ms ease;
 }
 
+.drawer-close:hover {
+  background: var(--glass-bg-elev-hover);
+  border-color: var(--glass-stroke-strong);
+}
+
+/* ---------------------------------------------------------------------------
+ * Top tabs (Text / Style / Other)
+ * ------------------------------------------------------------------------ */
+.drawer-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--glass-bg-sunken);
+  border-bottom: 1px solid var(--glass-stroke);
+  flex-shrink: 0;
+}
+
+.drawer-tabs button {
+  flex: 1;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.drawer-tabs button:hover {
+  color: var(--text);
+  background: var(--glass-bg-elev);
+}
+
+.drawer-tabs button.active {
+  background: var(--glass-bg-elev);
+  color: var(--text);
+  border-color: var(--glass-stroke-strong);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 var(--glass-highlight);
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Sections + layout primitives
+ * ------------------------------------------------------------------------ */
 .section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .section-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--panel-muted);
+  color: var(--text-muted);
 }
 
 .row {
@@ -190,44 +288,93 @@ input[type='range'] {
   gap: 8px;
 }
 
+.muted {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.value-pill {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 56px;
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+
+/* ---------------------------------------------------------------------------
+ * Buttons
+ * ------------------------------------------------------------------------ */
 .btn {
   height: 40px;
   min-width: 44px;
   padding: 0 14px;
-  border-radius: 8px;
-  border: 1px solid var(--panel-input-border);
-  background: var(--panel-input-bg);
-  color: var(--panel-text);
-  font-size: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-stroke);
+  background: var(--glass-bg-elev);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 80ms ease,
+    box-shadow 140ms ease;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
 }
 
 .btn:hover {
-  border-color: #555;
+  background: var(--glass-bg-elev-hover);
+  border-color: var(--glass-stroke-strong);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .btn.primary {
-  background: var(--panel-accent);
-  border-color: var(--panel-accent);
+  background: var(--accent);
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.btn.primary:hover {
+  background: #6ea7ff;
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .btn.danger {
-  border-color: var(--panel-danger);
-  color: var(--panel-danger);
+  color: var(--danger);
+  border-color: var(--danger-soft);
+}
+
+.btn.danger:hover {
+  border-color: rgba(255, 90, 90, 0.5);
+  background: rgba(255, 90, 90, 0.08);
 }
 
 .btn.danger.armed {
-  background: var(--panel-danger);
+  background: var(--danger);
   color: #fff;
+  border-color: var(--danger);
 }
 
 .btn.active {
-  background: var(--panel-accent);
-  border-color: var(--panel-accent);
+  background: var(--accent);
+  border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
 
@@ -236,61 +383,91 @@ input[type='range'] {
   padding: 0;
 }
 
+/* ---------------------------------------------------------------------------
+ * Text inputs
+ * ------------------------------------------------------------------------ */
 .input,
 .textarea {
   width: 100%;
-  background: var(--panel-input-bg);
-  border: 1px solid var(--panel-input-border);
-  border-radius: 8px;
+  background: var(--glass-bg-sunken);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius-md);
   padding: 10px 12px;
   font-size: 14px;
+  color: var(--text);
   resize: vertical;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
 .textarea {
   min-height: 88px;
   font-family: inherit;
+  line-height: 1.4;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-faint);
 }
 
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--panel-accent);
+  border-color: var(--accent);
+  background: rgba(0, 0, 0, 0.36);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+/* ---------------------------------------------------------------------------
+ * Inline tab row (mode toggle, color type tabs, language toggle)
+ * ------------------------------------------------------------------------ */
 .tab-row {
   display: flex;
-  gap: 4px;
-  background: var(--panel-input-bg);
-  border: 1px solid var(--panel-input-border);
-  border-radius: 8px;
+  gap: 3px;
+  background: var(--glass-bg-sunken);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius-md);
   padding: 3px;
 }
 
 .tab-row .tab {
   flex: 1;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 7px;
   border: none;
   background: transparent;
-  color: var(--panel-muted);
+  color: var(--text-muted);
   font-size: 13px;
+  font-weight: 500;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.tab-row .tab:hover {
+  color: var(--text);
 }
 
 .tab-row .tab.active {
-  background: var(--panel-accent);
-  color: #fff;
+  background: var(--glass-bg-elev);
+  color: var(--text);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 var(--glass-highlight);
 }
 
+/* ---------------------------------------------------------------------------
+ * Color swatches
+ * ------------------------------------------------------------------------ */
 .swatch {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--panel-input-border);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-stroke-strong);
   background: transparent;
   padding: 0;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
 
 .swatch input[type='color'] {
@@ -304,9 +481,12 @@ input[type='range'] {
   cursor: pointer;
 }
 
+/* ---------------------------------------------------------------------------
+ * Gradient stop list
+ * ------------------------------------------------------------------------ */
 .stop-row {
   display: grid;
-  grid-template-columns: 36px 1fr 64px 36px;
+  grid-template-columns: 36px 1fr 60px 36px;
   gap: 8px;
   align-items: center;
 }
@@ -314,20 +494,27 @@ input[type='range'] {
 .stop-row .pos-input {
   width: 100%;
   text-align: right;
-  background: var(--panel-input-bg);
-  border: 1px solid var(--panel-input-border);
-  border-radius: 6px;
+  background: var(--glass-bg-sunken);
+  border: 1px solid var(--glass-stroke);
+  border-radius: 7px;
   padding: 6px 8px;
-  font-size: 13px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.stop-row .pos-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .stop-bar {
   position: relative;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--panel-input-border);
+  height: 30px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-stroke);
   overflow: hidden;
   cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 .stop-bar-marker {
@@ -336,11 +523,14 @@ input[type='range'] {
   bottom: 0;
   width: 2px;
   background: #fff;
-  box-shadow: 0 0 0 1px #000;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
   transform: translateX(-50%);
   pointer-events: none;
 }
 
+/* ---------------------------------------------------------------------------
+ * Preset rows
+ * ------------------------------------------------------------------------ */
 .preset-list {
   display: flex;
   flex-direction: column;
@@ -350,12 +540,18 @@ input[type='range'] {
 .preset-row {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
-  padding: 6px;
-  background: var(--panel-input-bg);
-  border: 1px solid var(--panel-input-border);
-  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--glass-bg-elev);
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius-md);
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.preset-row:hover {
+  background: var(--glass-bg-elev-hover);
+  border-color: var(--glass-stroke-strong);
 }
 
 .preset-name {
@@ -367,14 +563,15 @@ input[type='range'] {
 
 .preset-swatches {
   display: flex;
-  gap: 4px;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .preset-swatches > div {
   width: 18px;
   height: 18px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  border: 1px solid var(--glass-stroke-strong);
 }
 
 .preset-name-text {
@@ -382,17 +579,22 @@ input[type='range'] {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--text);
 }
 
+/* ---------------------------------------------------------------------------
+ * Radial center picker
+ * ------------------------------------------------------------------------ */
 .radial-pad {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
   max-width: 220px;
-  border-radius: 12px;
-  border: 1px solid var(--panel-input-border);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-stroke-strong);
   cursor: crosshair;
   touch-action: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
 .radial-pad-handle {
@@ -404,21 +606,57 @@ input[type='range'] {
   border: 2px solid #000;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-.muted {
-  color: var(--panel-muted);
-  font-size: 12px;
+/* ---------------------------------------------------------------------------
+ * Range slider — tweak thumb to match glass aesthetic on WebKit
+ * ------------------------------------------------------------------------ */
+.range,
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 30px;
+  background: transparent;
 }
 
-.range {
-  width: 100%;
+.range::-webkit-slider-runnable-track,
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--glass-bg-sunken);
+  border-radius: 999px;
+  border: 1px solid var(--glass-stroke);
 }
 
-.value-pill {
-  font-variant-numeric: tabular-nums;
-  font-size: 12px;
-  color: var(--panel-muted);
-  min-width: 56px;
-  text-align: right;
+.range::-webkit-slider-thumb,
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--glass-stroke-strong);
+  margin-top: -9px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.range::-moz-range-track,
+input[type='range']::-moz-range-track {
+  height: 4px;
+  background: var(--glass-bg-sunken);
+  border-radius: 999px;
+  border: 1px solid var(--glass-stroke);
+}
+
+.range::-moz-range-thumb,
+input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--glass-stroke-strong);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
 }

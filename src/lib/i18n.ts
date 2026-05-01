@@ -9,6 +9,10 @@ const ZH: Dict = {
   'settings.title': '設定',
   'settings.close': '關閉',
 
+  'tab.text': '文字',
+  'tab.style': '樣式',
+  'tab.other': '其他',
+
   'mode.label': '顯示模式',
   'mode.static': '固定顯示',
   'mode.marquee': '跑馬燈',
@@ -42,15 +46,16 @@ const ZH: Dict = {
   'gradient.remove': '刪除',
   'gradient.position': '位置',
 
-  'preset.section': '預設組合',
-  'preset.empty': '尚未儲存任何預設組合',
-  'preset.namePlaceholder': '預設名稱',
-  'preset.save': '儲存目前顏色',
+  'colorPreset.section': '顏色預設',
+  'textPreset.section': '文字預設',
+  'preset.empty': '尚未儲存',
+  'preset.namePlaceholder': '預設名稱（可留白）',
+  'preset.save': '儲存',
   'preset.apply': '套用',
   'preset.delete': '刪除',
   'preset.deleteConfirm': '再點一次確認',
 
-  'reset.label': '重置設定',
+  'reset.label': '重置顏色',
   'reset.button': '重置為黑底白字',
   'reset.confirm': '再點一次確認重置',
 };
@@ -60,6 +65,10 @@ const EN: Dict = {
   'settings.open': 'Open settings',
   'settings.title': 'Settings',
   'settings.close': 'Close',
+
+  'tab.text': 'Text',
+  'tab.style': 'Style',
+  'tab.other': 'Other',
 
   'mode.label': 'Display mode',
   'mode.static': 'Static',
@@ -94,17 +103,18 @@ const EN: Dict = {
   'gradient.remove': 'Remove',
   'gradient.position': 'Position',
 
-  'preset.section': 'Presets',
-  'preset.empty': 'No saved presets yet',
-  'preset.namePlaceholder': 'Preset name',
-  'preset.save': 'Save current colors',
+  'colorPreset.section': 'Color presets',
+  'textPreset.section': 'Text presets',
+  'preset.empty': 'Nothing saved yet',
+  'preset.namePlaceholder': 'Name (optional)',
+  'preset.save': 'Save',
   'preset.apply': 'Apply',
   'preset.delete': 'Delete',
   'preset.deleteConfirm': 'Tap again to confirm',
 
-  'reset.label': 'Reset',
-  'reset.button': 'Reset to defaults',
-  'reset.confirm': 'Tap again to confirm reset',
+  'reset.label': 'Reset colors',
+  'reset.button': 'Reset to white on black',
+  'reset.confirm': 'Tap again to confirm',
 };
 
 const DICTS: Record<Lang, Dict> = {

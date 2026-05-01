@@ -3,7 +3,7 @@ import { useT } from '../../lib/i18n';
 import { ConfirmButton } from '../ui/ConfirmButton';
 
 export function ResetButton() {
-  const reset = useSettings((s) => s.resetSettings);
+  const reset = useSettings((s) => s.resetColors);
   const t = useT();
 
   return (
