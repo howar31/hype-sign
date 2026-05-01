@@ -62,7 +62,7 @@ export function RadialEditor({ value, onChange }: Props) {
         </div>
       </div>
 
-      <StopList stops={value.stops} onChange={setStops} previewCss={colorToCss(value)} />
+      <StopList stops={value.stops} onChange={setStops} />
     </div>
   );
 }

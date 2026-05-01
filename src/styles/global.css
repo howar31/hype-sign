@@ -60,7 +60,11 @@ body,
   padding: 0;
   width: 100%;
   height: 100%;
-  height: 100dvh;
+  /* Use 100lvh (large viewport) instead of 100dvh in iOS PWA standalone:
+     dvh/100% can resolve to (physical_height - safe_area_bottom), leaving
+     a black home-indicator gap that position:fixed children inherit when
+     iOS clips them to body's box. lvh is always the physical screen. */
+  height: 100lvh;
   overflow: hidden;
   overscroll-behavior: none;
   touch-action: manipulation;
@@ -104,9 +108,17 @@ input[type='range'] {
  *                   content avoids the notch; reaches the physical bottom
  *                   edge so iOS auto-hides the home indicator over it.
  * ------------------------------------------------------------------------ */
+/* Use explicit width/height in lvh instead of `inset: 0` / `bottom: 0`.
+   In iOS PWA standalone, position:fixed children of a body with
+   `overflow: hidden` can be clipped to the body's height, which dvh /
+   100% sometimes resolves shorter than the physical screen, leaving a
+   black home-indicator gap. lvh is always the physical viewport. */
 .bg-layer {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100lvh;
   z-index: 0;
   pointer-events: none;
 }
@@ -114,9 +126,9 @@ input[type='range'] {
 .display-root {
   position: fixed;
   top: var(--sai-top);
-  right: 0;
-  bottom: 0;
   left: 0;
+  width: 100vw;
+  height: calc(100lvh - var(--sai-top));
   z-index: 1;
   overflow: hidden;
   user-select: none;
@@ -197,7 +209,7 @@ input[type='range'] {
   /* min() caps at viewport height so the panel can't extend past the screen
      even if the user dragged the resize handle large; --floating-height is
      the persisted preference written by App.tsx. */
-  height: min(var(--floating-height, 600px), calc(100dvh - 40px));
+  height: min(var(--floating-height, 600px), calc(100lvh - 40px));
   border: 1px solid var(--glass-stroke);
   border-radius: var(--radius-lg);
   box-shadow:
@@ -221,14 +233,18 @@ input[type='range'] {
 @media (max-width: 767px) {
   .drawer.drawer--split,
   .drawer.drawer--floating {
-    top: auto !important;
+    /* Anchor the panel's TOP relative to the large viewport so its bottom
+       edge reaches the physical screen bottom (under the home indicator).
+       Using bottom: 0 alone got clipped to layout-viewport-bottom on iOS
+       PWA standalone, leaving a ~34px black home-indicator strip below. */
+    top: max(0px, calc(100lvh - var(--mobile-panel-height, 360px))) !important;
     right: 0 !important;
-    bottom: 0 !important;
+    bottom: auto !important;
     left: 0 !important;
     width: 100vw;
     max-width: none;
     height: var(--mobile-panel-height, 360px);
-    max-height: 90dvh;
+    max-height: 90lvh;
     border-left: none;
     border-right: none;
     border-bottom: none;
@@ -241,6 +257,12 @@ input[type='range'] {
     transform-origin: center bottom;
     opacity: 1;
     pointer-events: auto;
+    /* The base .drawer rule sets padding-top: var(--sai-top) so a panel
+       anchored at the viewport top stays clear of the iPhone notch. The
+       bottom sheet is anchored at the viewport BOTTOM, so the notch is
+       irrelevant — without this override the resize handle gets pushed
+       ~47px below the panel's top edge on iOS. */
+    padding-top: 0;
   }
   .drawer.drawer--split.open,
   .drawer.drawer--floating.open {

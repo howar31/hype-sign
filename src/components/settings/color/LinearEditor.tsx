@@ -1,4 +1,3 @@
-import { colorToCss } from '../../../lib/colorToCss';
 import { useT } from '../../../lib/i18n';
 import type { ColorStop, LinearGradient } from '../../../types';
 import { StopList } from './StopList';
@@ -38,11 +37,7 @@ export function LinearEditor({ value, onChange }: Props) {
         />
       </div>
 
-      <StopList
-        stops={value.stops}
-        onChange={setStops}
-        previewCss={colorToCss(value)}
-      />
+      <StopList stops={value.stops} onChange={setStops} />
     </div>
   );
 }

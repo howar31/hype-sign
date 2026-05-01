@@ -5,15 +5,29 @@ import { ConfirmButton } from '../../ui/ConfirmButton';
 type Props = {
   stops: ColorStop[];
   onChange: (stops: ColorStop[]) => void;
-  /** A CSS gradient string used to preview the bar. */
-  previewCss: string;
 };
 
 const MIN_STOPS = 2;
 
-export function StopList({ stops, onChange, previewCss }: Props) {
+/**
+ * Build a left-to-right preview gradient from the stops, ignoring the
+ * parent color's angle (linear) or center (radial). The stop markers are
+ * positioned by `left: position%`, so the bar must use the same axis or
+ * the colors and markers won't line up — that mismatch was the source of
+ * an "abnormal color appears on the wrong side" bug when the user picked
+ * a non-90° linear angle or moved the radial center.
+ */
+function previewBar(stops: ColorStop[]): string {
+  if (stops.length === 0) return 'transparent';
+  const sorted = [...stops].sort((a, b) => a.position - b.position);
+  if (sorted.length === 1) return sorted[0].color;
+  return `linear-gradient(to right, ${sorted.map((s) => `${s.color} ${s.position}%`).join(', ')})`;
+}
+
+export function StopList({ stops, onChange }: Props) {
   const t = useT();
   const sorted = [...stops].sort((a, b) => a.position - b.position);
+  const previewCss = previewBar(stops);
 
   function updateStop(id: string, patch: Partial<ColorStop>) {
     onChange(stops.map((s) => (s.id === id ? { ...s, ...patch } : s)));
