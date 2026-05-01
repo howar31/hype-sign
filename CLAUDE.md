@@ -7,6 +7,7 @@ Offline cheering board / LED display PWA. Vite 6 + React 18 + TypeScript.
 - `npm run build` — production build to `dist/`
 - `npm run preview` — serve `dist/` locally
 - `npm run typecheck` — tsc --noEmit
+- `npm run smoke` — headless puppeteer smoke suite (Node 18, auto-spawns dev server). Add `-- --only=<filter>` to run a subset. Screenshots dropped at `/tmp/hype-sign-smoke/`. Headless does NOT reproduce iOS-specific quirks — real device still required for iOS PWA changes.
 
 ## Architecture
 See [SPEC.md](SPEC.md).
@@ -34,6 +35,7 @@ GitHub Actions on push to `main` → GitHub Pages. Live at `http://lab.howar31.c
 
 ## Tooling
 - README screenshots + hero gif live in `docs/screenshots/`. Regenerate with `nvm use 18 && NODE_PATH=$(npm root -g) node scripts/capture-screenshots.cjs` (Puppeteer headless + ffmpeg palette encode). Add `--only=<id>` to recapture a single scene. Scenes (state seeded via `localStorage hype-sign:v1`) are defined inline in the script.
+- Smoke suite at `scripts/smoke.cjs` (run via `npm run smoke`). Covers: layout integrity, static + marquee rotation centering (measures `<svg text>` ink rect, NOT the SVG container — see `reference_ios_pwa_layout.md` for why), panel modes, drag clamps, settings actions, color stop-bar axis, persistence + v2→v3 migration, i18n key parity, console-error detection, plus visual snapshots. Each test isolates state by clearing `localStorage` in the page setup.
 
 ## Files where decisions live
 - Build / PWA / base path — `vite.config.ts`

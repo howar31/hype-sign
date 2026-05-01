@@ -57,9 +57,12 @@ npm run dev        # dev server on http://localhost:5173
 npm run build      # production build into dist/
 npm run preview    # serve the production build locally
 npm run typecheck  # tsc --noEmit
+npm run smoke      # headless puppeteer smoke suite (Node 18 + global puppeteer)
 ```
 
-Requires Node 20 or newer.
+Requires Node 20 or newer for dev/build (the `smoke` script needs Node 18 for Puppeteer; switch via `nvm use 18`).
+
+The smoke suite covers layout integrity, rotation-centering (measures actual glyph ink), panel modes, drag clamps, persistence + migrations, i18n parity, and visual snapshots. Headless Puppeteer reproduces layout but **not** iOS-specific quirks — real-device validation is still required for iOS PWA changes. Filter with `npm run smoke -- --only=panel`.
 
 ## Settings panel
 

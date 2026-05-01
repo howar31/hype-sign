@@ -55,7 +55,7 @@ export const DEFAULT_TEXT_COLOR: ColorValue = { type: 'solid', color: '#FFFFFF' 
 export const DEFAULT_BG_COLOR: ColorValue = { type: 'solid', color: '#000000' };
 
 export const DEFAULT_SETTINGS: Settings = {
-  text: 'Hype Sign\nSettings ↗',
+  text: 'Hype Sign\nClick for Settings',
   textColor: DEFAULT_TEXT_COLOR,
   bgColor: DEFAULT_BG_COLOR,
   mode: 'static',

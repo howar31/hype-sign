@@ -316,6 +316,8 @@ To fork to a different repo name: change `base` in `vite.config.ts` and `start_u
 
 ## README screenshots / hero gif
 
+`scripts/smoke.cjs` is a self-contained Puppeteer-driven smoke suite (run via `npm run smoke`). It covers layout integrity, static + marquee rotation centering (measures the `<svg text>` element's `getBoundingClientRect`, NOT the SVG container — the SVG container always fills its parent box, hiding ink-position bugs that the user can see; this caught a real marquee centering regression that an earlier puppeteer pass missed), panel modes (split / floating / mobile bottom sheet), drag clamps (header reposition + both resize handles), settings actions, color stop-bar axis, persistence + v2→v3 migration, i18n key parity between ZH and EN dicts, and console / page-error detection during a full interaction loop. Each test runs in a fresh page that clears `localStorage` so prior tests don't leak state. iPhone 12 Pro Max (428×926, deviceScaleFactor 3) is simulated with `--sai-top: 47px` injected via inline style; this catches non-iOS layout regressions but does NOT reproduce iOS GPU-compositor / safe-area / sub-pixel quirks — real-device validation is still required for any iOS PWA change.
+
 `scripts/capture-screenshots.cjs` is a self-contained Puppeteer driver that produces every image in `docs/screenshots/`:
 
 - `hero.gif` — 720×360 marquee at 15fps (3s loop), encoded via ffmpeg two-pass palette (`palettegen` + `paletteuse=dither=bayer:bayer_scale=5`). Source frames captured via CDP `Page.startScreencast` at `everyNthFrame: 2` (~30fps native), then downsampled at encode time to keep file size under 1.5 MB.
