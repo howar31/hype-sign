@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Hype Sign">
   <defs>
-    <linearGradient id="rim" x1="32" y1="2" x2="32" y2="22" gradientUnits="userSpaceOnUse">
+    <linearGradient id="rim" x1="32" y1="0" x2="32" y2="20" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.08"/>
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
@@ -34,19 +34,15 @@
                                             0 0 0 0 1
                                             0 0 0 0.03 0"/>
     </filter>
-    <clipPath id="tile-clip">
-      <rect x="2" y="2" width="60" height="60" rx="14"/>
-    </clipPath>
   </defs>
 
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0a0a0a"/>
-  <g clip-path="url(#tile-clip)">
-    <rect x="2" y="2" width="60" height="60" fill="url(#scan)"/>
-    <rect x="2" y="2" width="60" height="60" filter="url(#grain)"/>
-    <rect x="2" y="2" width="60" height="60" fill="url(#vignette)"/>
-    <rect x="2" y="2" width="60" height="60" fill="url(#warmth)"/>
-  </g>
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#rim)"/>
+  <!-- Full-bleed so iOS / Android adaptive-icon containers add their own corners -->
+  <rect width="64" height="64" fill="#0a0a0a"/>
+  <rect width="64" height="64" fill="url(#scan)"/>
+  <rect width="64" height="64" filter="url(#grain)"/>
+  <rect width="64" height="64" fill="url(#vignette)"/>
+  <rect width="64" height="64" fill="url(#warmth)"/>
+  <rect width="64" height="64" fill="url(#rim)"/>
 
   <g filter="url(#bloom)">
     <rect x="17" y="22" width="6" height="20" rx="3" fill="#00e676"/>

@@ -194,30 +194,27 @@ Single file, two flat dicts (ZH-TW + EN). `useT()` returns `(key) => string`. Mi
 
 Icons are SVG-sourced and rasterized to PNG via `rsvg-convert` (librsvg). Source files:
 
-Three SVG sources, each used for a specific purpose:
+Three SVG sources, all sharing the **vintage CRT** look — solid `#0a0a0a` body, almost-invisible horizontal scan lines (Gaussian-profile gradient), radial vignette + warm amber corner tint for the aged-tube feel, very faint `feTurbulence` phosphor grain (α≈0.03), subtle top rim light, and three high-saturation bars (green `#00e676` / red `#ff3b4d` / yellow `#ffea00`) wrapped in a `feGaussianBlur` bloom that mimics LED phosphor bleed:
 
-- `public/favicon.svg` — **browser tab favicon, transparent canvas**. Crystal-clear translucent glass tile: low-alpha white body (≤0.22), strong top rim light (α=0.85), small specular highlight at top-left, faint bottom shadow. Dual stroke edge — outer `#000` α=0.1 + inner `#fff` α=0.7 — keeps the silhouette readable on both light and dark tabs. Inside the tile, a 3-bar equalizer motif filled with a sky-cyan → brand-blue gradient (`#a8defe → #4f8cff`); tall middle bar, shorter flanking bars.
-- `public/icon-light.svg` — **standard PWA icon source** (192/512). Full-bleed sky-blue → brand-blue gradient (`#a8defe → #4f8cff`) with a top sheen, and **white** equalizer bars at full visual size (no safe-zone inset). Bright/light feel — used because the previous dark-backplate look read as "dark mode" on home screens.
-- `public/icon-maskable.svg` — **maskable PWA icon source** (maskable-512). Same sky-blue background as `icon-light.svg`, but the white bars are inset to fit the maskable safe zone (~80% of canvas) so cropping won't trim them.
+- `public/favicon.svg` — **browser tab favicon**. Rounded square (60×60 inside a 64×64 viewBox, with 2px transparent margin so the tab background frames it cleanly). All vintage-CRT layers are clipped to the rounded rect.
+- `public/icon-pwa.svg` — **standard PWA icon source** (192/512). Same look but **full-bleed** (no rounded corners in the SVG itself) so iOS / Android adaptive-icon containers can apply their own corner masks without doubling up.
+- `public/icon-maskable.svg` — **maskable PWA icon source** (maskable-512). Full-bleed too, but the bars are inset to fit the maskable ~80% safe zone (left bar at x=20, middle at x=29.5, right at x=39, all 5px wide instead of 6).
 
-The 192/512 PNGs come from `icon-light.svg`, no `-b` background needed. The maskable PNG comes from `icon-maskable.svg`. The transparent favicon.svg drives only the browser-tab favicon, not any PNG.
+The 192/512 PNGs come from `icon-pwa.svg`; the maskable PNG comes from `icon-maskable.svg`. No `-b` background flag is needed — the SVGs are already opaque.
 
-Logo colors are **fixed** — none of the SVGs respond to `prefers-color-scheme`. PNGs are static and cannot adapt anyway. iOS additionally locks the home-screen icon at "Add to Home Screen" time, so even if the SVG could adapt, the installed PWA wouldn't switch. If you want a dark-themed favicon for browser tabs, embed `<style>@media (prefers-color-scheme: dark) { ... }</style>` inside favicon.svg (Safari/Firefox honor it; Chrome's support is unstable).
+Logo colors are **fixed** — none of the SVGs respond to `prefers-color-scheme`. PNGs are static and cannot adapt anyway. iOS additionally locks the home-screen icon at "Add to Home Screen" time, so even if the SVG could adapt, the installed PWA wouldn't switch.
 
 Regenerate after editing any SVG:
 
 ```bash
-rsvg-convert -w 192 -h 192 public/icon-light.svg     -o public/icons/192.png
-rsvg-convert -w 512 -h 512 public/icon-light.svg     -o public/icons/512.png
+rsvg-convert -w 192 -h 192 public/icon-pwa.svg       -o public/icons/192.png
+rsvg-convert -w 512 -h 512 public/icon-pwa.svg       -o public/icons/512.png
 rsvg-convert -w 512 -h 512 public/icon-maskable.svg  -o public/icons/maskable-512.png
 ```
 
-Optional dark-themed PNGs (if you want to swap back manually) — rasterize from the transparent favicon.svg with a dark backplate baked in:
+Note: the rasterized PNGs are larger than typical (~30 KB / 130 KB / 130 KB) because the vintage texture has lots of fine pixel variation that PNG can't deduplicate. WebP would compress this kind of texture far better; revisit if total icon size matters.
 
-```bash
-rsvg-convert -w 192 -h 192 -b "#1a1a20" public/favicon.svg -o public/icons/192.png
-rsvg-convert -w 512 -h 512 -b "#1a1a20" public/favicon.svg -o public/icons/512.png
-```
+Renderer caveats: `rsvg-convert` (librsvg) supports `feTurbulence`, `feGaussianBlur`, `feColorMatrix`, and `feMerge` used here. Browsers render full-spec SVG, so favicon.svg works the same in tabs.
 
 Headless Chrome (Puppeteer) hangs on multi-gradient `page.screenshot` of these SVGs in this environment — `rsvg-convert` is the path that actually works. Install via `brew install librsvg` if missing.
 

@@ -64,18 +64,18 @@ The Vite `base` is `/hype-sign/`. If you fork under a different repo name, updat
 
 ## Icons
 
-Three SVG sources, each focused on a specific surface:
+A vintage CRT look — black tile, almost-invisible horizontal scan lines, radial vignette with warm amber corners, and three high-saturation bars (green / red / yellow) wrapped in an LED phosphor bloom. Three SVG sources for three surfaces:
 
-- `public/favicon.svg` — transparent crystal-glass tile + sky-cyan equalizer bars. Used as the browser-tab favicon; the canvas stays transparent so it sits on any tab background.
-- `public/icon-light.svg` — full-bleed sky-blue gradient + white equalizer bars. Source of the home-screen PNGs (192 / 512). Bright, light-feel.
-- `public/icon-maskable.svg` — same sky-blue background, but bars inset to fit the maskable safe zone.
+- `public/favicon.svg` — rounded-square version with a 2px transparent margin (browser tab favicon).
+- `public/icon-pwa.svg` — full-bleed version (used for the 192/512 PWA PNGs so iOS/Android can add their own corner masks).
+- `public/icon-maskable.svg` — full-bleed too, with bars inset to fit the maskable ~80% safe zone.
 
 All PNGs are rasterized with [librsvg](https://wiki.gnome.org/Projects/LibRsvg)'s `rsvg-convert`. To re-render after editing the SVGs:
 
 ```bash
 brew install librsvg    # one-time, if not already installed
-rsvg-convert -w 192 -h 192 public/icon-light.svg     -o public/icons/192.png
-rsvg-convert -w 512 -h 512 public/icon-light.svg     -o public/icons/512.png
+rsvg-convert -w 192 -h 192 public/icon-pwa.svg       -o public/icons/192.png
+rsvg-convert -w 512 -h 512 public/icon-pwa.svg       -o public/icons/512.png
 rsvg-convert -w 512 -h 512 public/icon-maskable.svg  -o public/icons/maskable-512.png
 ```
 
