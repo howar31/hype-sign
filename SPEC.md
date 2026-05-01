@@ -300,6 +300,28 @@ The repository's GitHub Pages is configured with `build_type=workflow`. Account-
 
 To fork to a different repo name: change `base` in `vite.config.ts` and `start_url`/`scope` in the PWA manifest there.
 
+## README screenshots / hero gif
+
+`scripts/capture-screenshots.cjs` is a self-contained Puppeteer driver that produces every image in `docs/screenshots/`:
+
+- `hero.gif` — 720×360 marquee at 15fps (3s loop), encoded via ffmpeg two-pass palette (`palettegen` + `paletteuse=dither=bayer:bayer_scale=5`). Source frames captured via CDP `Page.startScreencast` at `everyNthFrame: 2` (~30fps native), then downsampled at encode time to keep file size under 1.5 MB.
+- 7 PNGs: `static-hero`, `cheer-board`, `drawer-gradient`, `drawer-presets`, `mobile-portrait`, `drawer-zh`, `drawer-en` (the last two are paired side-by-side in README to show i18n parity without needing image-compositing tools at build time).
+
+Pipeline:
+1. Spawn vite dev server (`npx vite --port 5173 --strictPort`), wait for `Local:` log.
+2. Per scene: open a fresh `puppeteer.newPage()`, register `evaluateOnNewDocument` that writes `localStorage['hype-sign:v1'] = { state, version: 2 }` so zustand's persist middleware rehydrates from it on first load.
+3. `goto` + `waitForSelector('.display-root')` + 600ms settle (lets `StaticDisplay`'s `useLayoutEffect` getBBox run).
+4. For drawer-open scenes: programmatically click `button.settings-toggle`, wait 450ms for the slide animation, click the target tab in `.drawer-tabs`. Then inject CSS to hide the toggle (so it doesn't appear in the screenshot). For canvas-only scenes: hide both `.settings-toggle` AND closed `.drawer` / `.drawer-backdrop` to avoid faint translucent edge artifacts.
+5. `page.screenshot({ path, type: 'png' })`.
+
+Hero capture uses CDP screencast (not a `screenshot()` loop) because Puppeteer's screenshot is sync-blocking per call and would yield irregular frame intervals; screencast streams at native rAF cadence.
+
+`--only=<id>[,<id>...]` recaptures a subset. The script is idempotent — overwrites existing files.
+
+Requires Node 18 (Puppeteer is installed globally there per `~/.claude/skills/browser-automation`). Run with `NODE_PATH=$(npm root -g) node scripts/capture-screenshots.cjs`.
+
+iOS PWA standalone-mode layout (notch / safe-area / home-indicator) **cannot** be reproduced via Puppeteer; these screenshots are headless-Chrome desktop renders and intentionally don't cover device-specific quirks. Real-device captures, if ever needed, are out-of-band manual screenshots.
+
 ## Things to be careful about when extending
 
 - **Persisted state**: any new setting must be added to `partialize` in the store, otherwise it won't survive reload.

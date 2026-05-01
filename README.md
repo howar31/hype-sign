@@ -4,6 +4,8 @@
 
 > 在演唱會、體育場、戶外活動等任何訊號不穩的場合，把手機 / iPad / PC 變成一塊高亮顯示板。
 
+![Hype Sign demo](docs/screenshots/hero.gif)
+
 ## Features
 
 - **Static mode** — multi-line text auto-fits to fill the entire screen, gradients span the full block
@@ -21,6 +23,29 @@
 - **Edge margin slider** — set how much breathing room sits between the text and the screen edges (0–25% of the viewport's short side); background fills edge-to-edge regardless
 - **iOS-safe layout** — text content automatically dodges the iPhone notch and home-indicator via `env(safe-area-inset-*)`, while the background still extends to the physical edges; rotation (0°/90°/180°/270°) fits the safe canvas exactly, no clipping at the notch or screen edges
 - **Font weight slider** — pick a weight from 100 (thin) to 900 (black) in steps of 100; falls back to the nearest weight the active system font ships
+
+## Screenshots
+
+| Static auto-fit gradient | Cheering board |
+|---|---|
+| ![](docs/screenshots/static-hero.png) | ![](docs/screenshots/cheer-board.png) |
+
+| Gradient editor | Color preset library |
+|---|---|
+| ![](docs/screenshots/drawer-gradient.png) | ![](docs/screenshots/drawer-presets.png) |
+
+| Mobile portrait | Bilingual UI (繁體中文 / English) |
+|---|---|
+| ![](docs/screenshots/mobile-portrait.png) | ![](docs/screenshots/drawer-zh.png) ![](docs/screenshots/drawer-en.png) |
+
+Captured by `scripts/capture-screenshots.cjs` (Puppeteer + ffmpeg). Run with:
+
+```bash
+nvm use 18
+NODE_PATH=$(npm root -g) node scripts/capture-screenshots.cjs
+# Or recapture a single scene:
+NODE_PATH=$(npm root -g) node scripts/capture-screenshots.cjs --only=hero
+```
 
 ## Quick start
 

@@ -32,6 +32,9 @@ See [SPEC.md](SPEC.md).
 ## Deploy
 GitHub Actions on push to `main` → GitHub Pages. Live at `http://lab.howar31.com/hype-sign/`. Vite `base` is `/hype-sign/`; manifest `scope` and `start_url` match.
 
+## Tooling
+- README screenshots + hero gif live in `docs/screenshots/`. Regenerate with `nvm use 18 && NODE_PATH=$(npm root -g) node scripts/capture-screenshots.cjs` (Puppeteer headless + ffmpeg palette encode). Add `--only=<id>` to recapture a single scene. Scenes (state seeded via `localStorage hype-sign:v1`) are defined inline in the script.
+
 ## Files where decisions live
 - Build / PWA / base path — `vite.config.ts`
 - TypeScript strictness — `tsconfig.app.json`
