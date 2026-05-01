@@ -1,48 +1,82 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSettings } from './store/settingsStore';
 import { colorToCss } from './lib/colorToCss';
 import { StaticDisplay } from './components/display/StaticDisplay';
 import { MarqueeDisplay } from './components/display/MarqueeDisplay';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 
+const DESKTOP_BREAKPOINT = '(min-width: 768px)';
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(DESKTOP_BREAKPOINT).matches : true,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_BREAKPOINT);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isDesktop;
+}
+
 export function App() {
   const mode = useSettings((s) => s.mode);
   const rotation = useSettings((s) => s.rotation);
   const bgColor = useSettings((s) => s.bgColor);
-  const [open, setOpen] = useState(false);
-  // Tap the canvas to hide / show the floating settings button so the
-  // display can be uncluttered. When hidden, pointer-events: none lets the
-  // tap pass through to display-root, which flips it back on.
-  const [toggleVisible, setToggleVisible] = useState(true);
+  const mobilePanelHeight = useSettings((s) => s.mobilePanelHeight);
+  const floatingHeight = useSettings((s) => s.floatingHeight);
+  const togglePanel = useSettings((s) => s.togglePanel);
+
+  const isDesktop = useIsDesktop();
+  const displayRef = useRef<HTMLDivElement>(null);
 
   const bg = colorToCss(bgColor);
-
   const rotated = rotation === 90 || rotation === 270;
-  // Rotation wrapper sizes itself to .display-root (the safe-area-aware
-  // canvas), not the raw viewport. When rotated 90°/270° we swap pre-
-  // rotation dims with the parent's post-rotation dims:
-  //   pre-rotation width  = parent height = calc(100dvh - var(--sai-top))
-  //   pre-rotation height = parent width  = 100vw
-  // (100% on the height property resolves to parent.height — *not*
-  // parent.width — so we must spell out 100vw explicitly.)
+
+  // Publish the persisted panel-height preferences as CSS vars so the
+  // drawer rules can size each variant accordingly.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--mobile-panel-height', `${mobilePanelHeight}px`);
+    root.style.setProperty('--floating-height', `${floatingHeight}px`);
+  }, [mobilePanelHeight, floatingHeight]);
+
+  // Publish .display-root's actual size as inline CSS vars so the rotation
+  // wrapper and the display components' edge-margin padding can consume
+  // them via var(--display-w / -h / -min). The canvas itself is full-
+  // viewport-fixed today, but the ResizeObserver-driven indirection is kept
+  // so the rotation/margin code stays robust to any future container size
+  // changes (e.g. window resize, future canvas-size feature).
+  useEffect(() => {
+    const el = displayRef.current;
+    if (!el) return;
+    const apply = (w: number, h: number) => {
+      el.style.setProperty('--display-w', `${w}px`);
+      el.style.setProperty('--display-h', `${h}px`);
+      el.style.setProperty('--display-min', `${Math.min(w, h)}px`);
+    };
+    apply(el.offsetWidth, el.offsetHeight);
+    const ro = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      apply(width, height);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const transformStyle = rotation === 0
     ? undefined
     : {
         position: 'absolute' as const,
         top: '50%',
         left: '50%',
-        width: rotated ? 'calc(100dvh - var(--sai-top))' : '100%',
-        height: rotated ? '100vw' : 'calc(100dvh - var(--sai-top))',
+        width: rotated ? 'var(--display-h)' : 'var(--display-w)',
+        height: rotated ? 'var(--display-w)' : 'var(--display-h)',
         transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-        transformOrigin: 'center center',
+        transformOrigin: 'center center' as const,
       };
-
-  function onCanvasClick() {
-    // Drawer is handling its own clicks (backdrop closes it); don't
-    // double-fire visibility toggling while it's open.
-    if (open) return;
-    setToggleVisible((v) => !v);
-  }
 
   return (
     <>
@@ -52,34 +86,13 @@ export function App() {
           stays out of those obstructions. */}
       <div className="bg-layer" aria-hidden style={{ background: bg }} />
 
-      <div className="display-root" onClick={onCanvasClick}>
+      <div ref={displayRef} className="display-root" onClick={togglePanel}>
         <div style={transformStyle ?? { width: '100%', height: '100%' }}>
           {mode === 'static' ? <StaticDisplay /> : <MarqueeDisplay />}
         </div>
       </div>
 
-      <button
-        type="button"
-        className={`settings-toggle${toggleVisible ? '' : ' hidden'}`}
-        aria-label="Open settings"
-        aria-hidden={!toggleVisible}
-        onClick={() => setOpen(true)}
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M4 7h16M4 12h16M4 17h16"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            opacity="0.85"
-          />
-          <circle cx="17" cy="7" r="2.6" fill="currentColor" />
-          <circle cx="8" cy="12" r="2.6" fill="currentColor" />
-          <circle cx="15" cy="17" r="2.6" fill="currentColor" />
-        </svg>
-      </button>
-
-      <SettingsPanel open={open} onClose={() => setOpen(false)} />
+      <SettingsPanel isDesktop={isDesktop} />
     </>
   );
 }

@@ -87,7 +87,7 @@ export function StaticDisplay() {
         display: 'grid',
         placeItems: 'center',
         overflow: 'hidden',
-        padding: `${margin}vmin`,
+        padding: `calc(var(--display-min, 100vmin) * ${margin / 100})`,
         boxSizing: 'border-box',
       }}
     >

@@ -5,7 +5,6 @@ type Dict = Record<string, string>;
 
 const ZH: Dict = {
   'app.title': '電子應援手板',
-  'settings.open': '開啟設定',
   'settings.title': '設定',
   'settings.close': '關閉',
 
@@ -13,6 +12,12 @@ const ZH: Dict = {
   'tab.tint': '字色',
   'tab.backdrop': '底色',
   'tab.settings': '設定',
+
+  'panel.modeSplit': '並排模式',
+  'panel.modeFloating': '浮動模式',
+  'panel.toggleMode': '切換面板模式',
+  'panel.resizeHandle': '拖曳調整面板高度',
+  'panel.dragHandle': '拖曳此處移動面板',
 
   'preset.saveCurrent': '儲存目前顏色',
 
@@ -83,7 +88,6 @@ const ZH: Dict = {
 
 const EN: Dict = {
   'app.title': 'Hype Sign',
-  'settings.open': 'Open settings',
   'settings.title': 'Settings',
   'settings.close': 'Close',
 
@@ -91,6 +95,12 @@ const EN: Dict = {
   'tab.tint': 'Tint',
   'tab.backdrop': 'Backdrop',
   'tab.settings': 'Settings',
+
+  'panel.modeSplit': 'Split mode',
+  'panel.modeFloating': 'Floating mode',
+  'panel.toggleMode': 'Toggle panel mode',
+  'panel.resizeHandle': 'Drag to resize panel',
+  'panel.dragHandle': 'Drag here to move panel',
 
   'preset.saveCurrent': 'Save current color',
 

@@ -21,7 +21,28 @@ import {
   type TextPreset,
 } from '../types';
 
-type State = Settings & {
+export type PanelMode = 'split' | 'floating';
+export type FloatingPos = { x: number; y: number };
+
+export const DEFAULT_PANEL_MODE: PanelMode = 'split';
+export const DEFAULT_FLOATING_POS: FloatingPos = { x: 24, y: 80 };
+export const DEFAULT_MOBILE_PANEL_HEIGHT = 360;
+export const MIN_MOBILE_PANEL_HEIGHT = 200;
+export const DEFAULT_FLOATING_HEIGHT = 600;
+export const MIN_FLOATING_HEIGHT = 200;
+
+type PanelState = {
+  // Persisted preferences
+  panelMode: PanelMode;
+  floatingPos: FloatingPos;
+  mobilePanelHeight: number;
+  floatingHeight: number;
+  // Session-only — single visibility flag. Click on the display canvas
+  // toggles this regardless of mode (no separate gear button anymore).
+  panelVisible: boolean;
+};
+
+type State = Settings & PanelState & {
   presets: Preset[];
   textPresets: TextPreset[];
 };
@@ -47,6 +68,12 @@ type Actions = {
   saveTextPreset: (name: string) => void;
   applyTextPreset: (id: string) => void;
   deleteTextPreset: (id: string) => void;
+  setPanelMode: (mode: PanelMode) => void;
+  togglePanel: () => void;
+  closePanel: () => void;
+  setFloatingPos: (pos: FloatingPos) => void;
+  setMobilePanelHeight: (h: number) => void;
+  setFloatingHeight: (h: number) => void;
 };
 
 const ROTATION_CYCLE: Rotation[] = [0, 90, 180, 270];
@@ -57,6 +84,11 @@ export const useSettings = create<State & Actions>()(
       ...DEFAULT_SETTINGS,
       presets: [],
       textPresets: [],
+      panelMode: DEFAULT_PANEL_MODE,
+      floatingPos: DEFAULT_FLOATING_POS,
+      mobilePanelHeight: DEFAULT_MOBILE_PANEL_HEIGHT,
+      floatingHeight: DEFAULT_FLOATING_HEIGHT,
+      panelVisible: false,
 
       setText: (text) => set({ text }),
       setTextColor: (textColor) => set({ textColor }),
@@ -128,12 +160,32 @@ export const useSettings = create<State & Actions>()(
       deleteTextPreset: (id) => {
         set({ textPresets: get().textPresets.filter((x) => x.id !== id) });
       },
+
+      setPanelMode: (mode) => set({ panelMode: mode }),
+      togglePanel: () => set({ panelVisible: !get().panelVisible }),
+      closePanel: () => set({ panelVisible: false }),
+      setFloatingPos: (pos) => set({ floatingPos: pos }),
+      setMobilePanelHeight: (h) => {
+        // Allow the bottom sheet to grow to 90% of the viewport, leaving
+        // ~10vh visible at the top so the user can still tap the canvas
+        // to dismiss the panel.
+        const max = typeof window !== 'undefined' ? window.innerHeight * 0.9 : 600;
+        const clamped = Math.max(MIN_MOBILE_PANEL_HEIGHT, Math.min(max, Math.round(h)));
+        set({ mobilePanelHeight: clamped });
+      },
+      setFloatingHeight: (h) => {
+        const max = typeof window !== 'undefined' ? window.innerHeight - 40 : 1000;
+        const clamped = Math.max(MIN_FLOATING_HEIGHT, Math.min(max, Math.round(h)));
+        set({ floatingHeight: clamped });
+      },
     }),
     {
       name: 'hype-sign:v1',
-      version: 2,
+      version: 3,
       // v1 → v2: presets used to be { textColor, bgColor } pairs. Split each
       // pair into two single-color presets so the new preset model works.
+      // v2 → v3: introduce panelMode / floatingPos / mobilePanelHeight; pure
+      // additive — seed defaults if absent.
       migrate: (persisted, version) => {
         const s = persisted as Partial<State> & {
           presets?: Array<Partial<Preset> & { textColor?: ColorValue; bgColor?: ColorValue }>;
@@ -163,6 +215,12 @@ export const useSettings = create<State & Actions>()(
           }
           s.presets = next;
         }
+        if (version < 3) {
+          if (!s.panelMode) s.panelMode = DEFAULT_PANEL_MODE;
+          if (!s.floatingPos) s.floatingPos = DEFAULT_FLOATING_POS;
+          if (typeof s.mobilePanelHeight !== 'number') s.mobilePanelHeight = DEFAULT_MOBILE_PANEL_HEIGHT;
+          if (typeof s.floatingHeight !== 'number') s.floatingHeight = DEFAULT_FLOATING_HEIGHT;
+        }
         return s as State;
       },
       partialize: (s) => ({
@@ -177,6 +235,10 @@ export const useSettings = create<State & Actions>()(
         fontWeight: s.fontWeight,
         presets: s.presets,
         textPresets: s.textPresets,
+        panelMode: s.panelMode,
+        floatingPos: s.floatingPos,
+        mobilePanelHeight: s.mobilePanelHeight,
+        floatingHeight: s.floatingHeight,
       }),
     },
   ),

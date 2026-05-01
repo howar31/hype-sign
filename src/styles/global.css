@@ -36,6 +36,11 @@
   --sai-bottom: env(safe-area-inset-bottom, 0px);
   --sai-left: env(safe-area-inset-left, 0px);
 
+  /* Mobile bottom-sheet panel height (px). App.tsx writes the current
+     persisted value as inline style on documentElement; the mobile media
+     query reads it via var(--mobile-panel-height) when sizing .drawer. */
+  --mobile-panel-height: 360px;
+
   /* The canonical FONT_FAMILY string is set on documentElement at boot
      (see main.tsx). Fallback covers the brief moment before JS runs. */
   font-family: var(--font-family, system-ui, sans-serif);
@@ -87,13 +92,17 @@ input[type='range'] {
 /* ---------------------------------------------------------------------------
  * Display canvas
  *
- * Two layers:
+ * Two layers, both full-bleed. The settings panel sits ON TOP of these
+ * layers (no canvas shrinking) — clicking the canvas toggles the panel
+ * away to reveal the unobstructed full design. Keeping the canvas at a
+ * fixed full-viewport size avoids any aspect-ratio coupling between
+ * "design state" and "viewing state".
+ *
  *   .bg-layer    — full-bleed (extends under the iOS notch / home indicator)
- *                  so the background color reaches the physical edges.
- *   .display-root — same fixed full-viewport box, but with safe-area
- *                   insets as padding so text content avoids notch and
- *                   home indicator. Also catches the canvas tap that
- *                   toggles the settings button.
+ *                  so the background color reaches every physical edge.
+ *   .display-root — fixed canvas with safe-area inset on top so text
+ *                   content avoids the notch; reaches the physical bottom
+ *                   edge so iOS auto-hides the home indicator over it.
  * ------------------------------------------------------------------------ */
 .bg-layer {
   position: fixed;
@@ -103,13 +112,6 @@ input[type='range'] {
 }
 
 .display-root {
-  /* iOS PWA layout strategy:
-     - top: avoid the notch via the resolved safe-area inset
-     - bottom: 0 — reach the physical bottom edge. iOS auto-hides the
-       home indicator for full-screen PWAs; we do not pad for it.
-     - left/right: 0 — let the canvas reach the side edges.
-     The bg-layer underneath is full-bleed, so even the area covered by
-     the notch keeps the bg color. */
   position: fixed;
   top: var(--sai-top);
   right: 0;
@@ -122,96 +124,130 @@ input[type='range'] {
 }
 
 /* ---------------------------------------------------------------------------
- * Floating glass toggle button
- * ------------------------------------------------------------------------ */
-.settings-toggle {
-  position: fixed;
-  top: calc(var(--sai-top) + 14px);
-  right: calc(var(--sai-right) + 14px);
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--glass-stroke);
-  background: rgba(20, 20, 24, 0.55);
-  color: var(--text);
-  z-index: 50;
-  display: grid;
-  place-items: center;
-  backdrop-filter: var(--blur-glass);
-  -webkit-backdrop-filter: var(--blur-glass);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 var(--glass-highlight);
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    transform 100ms ease;
-}
-
-.settings-toggle:hover {
-  background: rgba(40, 40, 46, 0.65);
-  border-color: var(--glass-stroke-strong);
-}
-
-.settings-toggle:active {
-  transform: scale(0.94);
-}
-
-.settings-toggle.hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.85);
-}
-
-/* ---------------------------------------------------------------------------
  * Drawer
+ *
+ * Two layout modes (set via class on the root <aside>):
+ *   .drawer--split    — docked panel (right edge on desktop, bottom on
+ *                       mobile). Animates in/out with translate. No mask.
+ *   .drawer--floating — desktop-only free-floating window, positioned via
+ *                       inline style (left/top in pixels). Drag from the
+ *                       header. Click on canvas hides without closing.
+ *
+ * `.open` toggles slide-in for split, scale+fade-in for floating.
+ * `.hidden` (floating only) fades it out while keeping mode/position.
  * ------------------------------------------------------------------------ */
-.drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 90;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 220ms ease;
-}
-
-.drawer-backdrop.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 .drawer {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: var(--panel-width);
-  max-width: 100vw;
   background: var(--glass-bg);
   backdrop-filter: var(--blur-glass);
   -webkit-backdrop-filter: var(--blur-glass);
-  border-left: 1px solid var(--glass-stroke);
   z-index: 100;
-  transform: translateX(100%);
-  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
   padding-top: var(--sai-top);
   padding-bottom: var(--sai-bottom);
-  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.4);
+  transition:
+    transform 280ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 180ms ease,
+    box-shadow 280ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.drawer.open {
+/* Split mode — desktop docked right, mobile docked bottom. The panel
+   sits on top of the canvas (no shrinking), so a shadow gives it lift
+   off the design surface. The directional offset matches the panel's
+   exposed edge (left edge on desktop, top edge on mobile via the media
+   query below). Magnitude matches floating so the two modes feel
+   visually consistent.
+
+   Shadow is only applied in the .open state — when the panel slides out,
+   we don't want the shadow leaking back into the visible canvas from
+   off-screen. The transition on box-shadow (defined on .drawer above)
+   keeps the appear/disappear in sync with the slide. */
+.drawer.drawer--split {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  width: var(--panel-width);
+  max-width: 100vw;
+  border-left: 1px solid var(--glass-stroke);
+  transform: translateX(100%);
+}
+.drawer.drawer--split.open {
   transform: translateX(0);
+  box-shadow:
+    -16px 0 48px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 var(--glass-highlight);
 }
 
-@media (max-width: 480px) {
-  .drawer {
+/* Floating mode — positioned via inline style (left/top). Has shadow +
+   border so it reads as a free window. Fixed height so the panel doesn't
+   grow as the user accumulates presets / templates — .drawer-body already
+   has overflow-y: auto and scrolls when content exceeds the box. The
+   min() cap keeps the panel inside the viewport on shorter screens.
+   transform-origin top-right so the open/hide scale anchors to the corner
+   most users drag the panel toward. */
+.drawer.drawer--floating {
+  top: 0;
+  left: 0;
+  right: auto;
+  bottom: auto;
+  width: var(--panel-width);
+  max-width: 100vw;
+  /* min() caps at viewport height so the panel can't extend past the screen
+     even if the user dragged the resize handle large; --floating-height is
+     the persisted preference written by App.tsx. */
+  height: min(var(--floating-height, 600px), calc(100dvh - 40px));
+  border: 1px solid var(--glass-stroke);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 var(--glass-highlight);
+  transform: scale(0.96);
+  transform-origin: top right;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.drawer.drawer--floating.open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mobile (< 768px): both modes collapse to a bottom sheet. The floating
+   inline-style left/top is overridden by !important so a stale persisted
+   floating-mode position can't escape the bottom-sheet treatment. */
+@media (max-width: 767px) {
+  .drawer.drawer--split,
+  .drawer.drawer--floating {
+    top: auto !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
     width: 100vw;
+    max-width: none;
+    height: var(--mobile-panel-height, 360px);
+    max-height: 90dvh;
     border-left: none;
+    border-right: none;
+    border-bottom: none;
+    border-top: 1px solid var(--glass-stroke);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(100%);
+    /* No shadow when closed — the panel is offscreen below but a shadow
+       with negative Y offset would still leak into the visible canvas. */
     box-shadow: none;
+    transform-origin: center bottom;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .drawer.drawer--split.open,
+  .drawer.drawer--floating.open {
+    transform: translateY(0);
+    box-shadow:
+      0 -16px 48px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 var(--glass-highlight);
   }
 }
 
@@ -224,6 +260,12 @@ input[type='range'] {
   flex-shrink: 0;
 }
 
+.drawer-header.draggable {
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+}
+
 .drawer-title {
   font-size: 17px;
   font-weight: 600;
@@ -231,7 +273,14 @@ input[type='range'] {
   letter-spacing: -0.01em;
 }
 
-.drawer-close {
+.drawer-header-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.drawer-close,
+.drawer-mode-toggle {
   width: 36px;
   height: 36px;
   padding: 0;
@@ -245,9 +294,38 @@ input[type='range'] {
   transition: background-color 140ms ease, border-color 140ms ease;
 }
 
-.drawer-close:hover {
+.drawer-close:hover,
+.drawer-mode-toggle:hover {
   background: var(--glass-bg-elev-hover);
   border-color: var(--glass-stroke-strong);
+}
+
+/* Resize handle — used at the top of the mobile bottom-sheet (drags
+   mobilePanelHeight) and at the bottom of the desktop floating panel
+   (drags floatingHeight). Both renders are JSX-conditional, so CSS
+   doesn't need media-query gating. */
+.drawer-resize-handle {
+  display: flex;
+  width: 100%;
+  height: 18px;
+  cursor: ns-resize;
+  touch-action: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.drawer-resize-handle::after {
+  content: '';
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-faint);
+}
+.drawer-resize-handle:hover::after {
+  background: var(--text-muted);
 }
 
 /* ---------------------------------------------------------------------------

@@ -146,10 +146,10 @@ Single-line continuous scroller at constant pixels-per-second.
 ## Settings panel
 
 Drawer with four tabs (in order):
-- **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), text presets, clear-text button at end
+- **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), font-weight slider, text presets, clear-text button at end
 - **Tint** (`字色`) — text-color editor, save-current-color form, shared color preset list (apply hits text), reset-tint button at end
 - **Backdrop** (`底色`) — background-color editor, save-current-color form, shared color preset list (apply hits bg), reset-backdrop button at end
-- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, font-weight slider, language toggle
+- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, language toggle
 
 `ClearTextButton`, `ResetColorButton(tint)`, and `ResetColorButton(bg)` all live at the bottom of their respective tabs as identical-looking danger ConfirmButtons. The two color-reset buttons are independent: resetting tint clears textColor and re-derives the ColorEditor's solid/linear/radial snapshots via a `key` bump, but does not touch backdrop's snapshots, and vice versa.
 
@@ -158,6 +158,19 @@ The shared `ColorPresetList` is rendered in both color tabs but takes an `applyT
 `ColorTypeIcon` (next to each preset's swatch) renders a tiny 14×14 glyph for solid / linear / radial. Tooltip: native `:hover` for desktop, plus a React-state-driven tap tooltip that auto-dismisses after ~2s for touch devices.
 
 Tab state is local (`useState`) — not persisted across sessions; defaults to `text`.
+
+### Panel modes
+
+Two layout modes (`panelMode`: `'split'` | `'floating'`, persisted) and a single session visibility flag (`panelVisible`):
+
+- **Split (default)** — panel docked. On desktop (≥ 768px) it docks to the right at `var(--panel-width)` (380px); on mobile (< 768px) it collapses to a bottom sheet at `var(--mobile-panel-height)` (default 360px, persisted, draggable via top resize handle, clamped 200px ↔ 90% viewport so ~10vh of canvas stays visible / tappable above the sheet). The panel sits ON TOP of the full-bleed canvas — no shrinking. No mask. Has a directional shadow when open (left-cast on desktop, up-cast on mobile).
+- **Floating (desktop only)** — panel becomes a draggable free window positioned via inline `left` / `top` from `floatingPos` (persisted, re-clamped on hydrate / resize so positions saved at a larger viewport don't leak off-screen). Has shadow + rounded corners + a bottom resize handle that drags `floatingHeight` (default 600px, persisted, clamped 200px ↔ `100dvh - 40px`). Drag handle for repositioning is the panel header (`.drawer-header.draggable`); pointer-capture-based drag, no library. Bounds clamp keeps at least 80px of header on-screen.
+
+**Shadow / open-state coupling.** All panel shadows live on the `.drawer.drawer--*.open` rules, not the base, and `box-shadow` is part of the `.drawer` transition list. When the panel slides offscreen via `transform: translateX/Y(100%)`, its `.open` class is removed, the box-shadow falls back to `none`, and the shadow's leak into the still-visible canvas fades out in sync with the slide.
+
+Mode is toggled via a button in the panel header (only rendered on desktop). Below the breakpoint `panelMode === 'floating'` is visually downgraded to split (bottom sheet) without mutating the persisted preference, so resizing back up restores floating.
+
+The panel itself is rendered in either mode regardless — `.drawer.drawer--split` or `.drawer.drawer--floating` — and `.open` toggles slide-in (split) or scale+fade-in (floating). Click on `.display-root` calls `togglePanel()` regardless of mode/device; ESC and the header `✕` call `closePanel()` for explicit dismiss. There is no separate gear button. Click-canvas-toggle is the preview gesture — close panel to see the unobstructed design, click again to reopen and continue editing.
 
 ## ConfirmButton
 
@@ -234,11 +247,11 @@ Everything that's a "raised surface" uses `--glass-bg-elev`; everything that's "
 
 - `touch-action: manipulation` globally → no 300ms tap delay, no double-tap zoom
 - Pointer Events on radial-pad → mouse/touch/pen single code path
-- Drawer is full-width on `max-width: 480px`, fixed 380px on desktop
+- Desktop / mobile breakpoint: `768px`. Below that the drawer collapses to a bottom sheet (full-width, `var(--mobile-panel-height)` tall, draggable via top resize handle); above, the drawer is `var(--panel-width)` (380px) docked right.
 - All tap targets ≥ 36px (most are 40+)
-- `useWakeLock` keeps screen awake while drawer is mounted (re-acquires on visibility change)
+- `useWakeLock` keeps screen awake while the panel component is mounted (re-acquires on visibility change)
 - iOS standalone meta tags set in `index.html`
-- Tapping anywhere on the display canvas (`.display-root`) toggles the floating settings button visibility — held in `App.tsx` local state (`toggleVisible`). When hidden the button gets `.hidden` (opacity 0, `pointer-events: none`, slight scale-down) so the tap on the same area passes through to the canvas and flips it back on. The toggle is gated by `!open` so an open drawer's backdrop click only closes the drawer.
+- Tapping anywhere on the display canvas (`.display-root`) toggles the panel via `togglePanel()` in the store — there is **no** floating gear button. The canvas itself never shrinks; the panel simply layers on top of it (split = docked right/bottom, floating = positioned). Click-canvas-to-toggle is the universal preview gesture — works the same in any mode, any device. ESC and the panel header's `✕` button both call `closePanel()` for an explicit dismiss.
 
 ### Two-layer canvas: bg-layer + display-root
 
@@ -246,6 +259,7 @@ The display surface is split into two stacked full-viewport layers:
 
 - `.bg-layer` — `position: fixed; inset: 0; z-index: 0; pointer-events: none`. Carries the background color (set inline in `App.tsx` from `bgColor` via `colorToCss`). Always full-bleed so the bg extends under the iPhone notch and reaches every physical edge, satisfying `viewport-fit=cover`.
 - `.display-root` — `position: fixed; top: var(--sai-top); right: 0; bottom: 0; left: 0; z-index: 1`. Top is offset by the safe-area inset to clear the iPhone notch; bottom is `0` so the canvas reaches the physical bottom edge. iOS auto-hides the home indicator over a full-screen PWA, so we deliberately don't pad for it. `StaticDisplay` / `MarqueeDisplay` render transparent content inside this box and let `.bg-layer` show through.
+- The settings panel is layered ON TOP of these two layers — clicking the canvas toggles the panel away to reveal the unobstructed full design. The canvas itself never shrinks; this avoids any aspect-ratio coupling between "design state" (panel open) and "viewing state" (panel closed).
 
 #### iOS standalone PWA quirk: env() inside fixed elements
 
@@ -263,31 +277,31 @@ iOS Safari standalone mode sometimes resolves `env(safe-area-inset-*)` to `0` wh
 
 `env()` resolves at `:root` consistently in iOS PWA mode; `var()` reads the already-resolved value at the point of use, so the fixed-element quirk doesn't bite. Always use `var(--sai-*)` in this codebase; never re-introduce `env(safe-area-inset-*)` directly on a fixed element.
 
-The `margin` user setting still applies as **additional uniform** padding inside each display, layered on top of the safe-area-aware display-root.
+The `margin` user setting (0–25 % of `--display-min`) still applies as **additional uniform** padding inside each display, layered on top of the safe-area-aware display-root. `--display-min` is published by a `ResizeObserver` on `.display-root` (= `min(.display-root.offsetWidth, .display-root.offsetHeight)`) so the margin tracks the shrunk canvas in split mode instead of the viewport. Earlier `vmin` units misbehaved here because `vmin` references the viewport, not the panel-aware container.
 
 Reference: [Designing Websites for iPhone X (WebKit blog)](https://webkit.org/blog/7929/designing-websites-for-iphone-x/) covers `viewport-fit=cover` and `env(safe-area-inset-*)`.
 
 ### Rotation wrapper sizing
 
-`App.tsx` mounts the active display inside a wrapper that handles 0° / 90° / 180° / 270° rotation. The wrapper sizes itself to the **`.display-root` parent**, not the raw viewport, so the rotated content exactly fills the safe-area-aware canvas with no overflow:
+`App.tsx` mounts the active display inside a wrapper that handles 0° / 90° / 180° / 270° rotation. The wrapper sizes itself to the **`.display-root` parent**, not the raw viewport, so the rotated content exactly fills the safe-area-aware canvas with no overflow. Since the canvas is panel-aware (shrinks in split mode), pre-rotation dimensions cannot be expressed in viewport units. Instead, a single `ResizeObserver` on `.display-root` publishes its current size as inline CSS vars (`--display-w`, `--display-h`, `--display-min`), and the rotation wrapper consumes them:
 
 ```ts
 const rotated = rotation === 90 || rotation === 270;
 const transformStyle = rotation === 0 ? undefined : {
   position: 'absolute',
   top: '50%', left: '50%',
-  width:  rotated ? 'calc(100dvh - var(--sai-top))' : '100%',
-  height: rotated ? '100vw' : 'calc(100dvh - var(--sai-top))',
+  width:  rotated ? 'var(--display-h)' : 'var(--display-w)',
+  height: rotated ? 'var(--display-w)' : 'var(--display-h)',
   transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
   transformOrigin: 'center center',
 };
 ```
 
-When rotated 90°/270°, pre-rotation width = parent height (`calc(100dvh - var(--sai-top))`) and pre-rotation height = parent width (`100vw`); after rotation, those swap and the rotated visible bounds match the parent exactly.
+When rotated 90°/270°, pre-rotation width = parent height and pre-rotation height = parent width; after rotation, those swap and the rotated visible bounds match the parent exactly. The same vars (`--display-min`) are reused by `StaticDisplay` / `MarqueeDisplay` for their edge-margin padding, so the margin proportions also track the shrunk canvas instead of the viewport.
 
-**Subtle gotcha — `height: 100%` does NOT give "parent width":** `100%` on the height property always resolves to the parent's *height*. Since `.display-root` is `100vw × (100dvh - var(--sai-top))`, using `height: 100%` here would size the wrapper to a `(100dvh - sai-top)` square — overflowing `.display-root` horizontally and getting clipped on left/right by `overflow: hidden` (this was the bug between commits b9d70a9 and the next). When you want "parent width" on the height property, spell out `100vw` explicitly.
+**Don't reintroduce viewport-unit formulations:** `100dvh` / `100vw` / `vmin` reference the viewport, which diverges from `.display-root` whenever the split panel docks. Earlier we used `calc(100dvh - var(--sai-top))` for parent-height — that worked when `.display-root` was always full-bleed, but breaks once the canvas shrinks horizontally for the split panel. Always go through the `--display-*` vars now.
 
-The earlier `100dvh × 100dvw` viewport-relative sizing overflowed `.display-root` vertically and got clipped at the notch boundary, wasting `--sai-top` worth of usable canvas. Don't reintroduce either of those formulations here.
+**Subtle gotcha — `height: 100%` does NOT give "parent width":** `100%` on the height property always resolves to the parent's *height*. When you want "parent width" on the height property, spell out the actual width — the `--display-w` var here.
 
 ## Deploy
 

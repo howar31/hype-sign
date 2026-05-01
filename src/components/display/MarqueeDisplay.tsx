@@ -66,7 +66,7 @@ export function MarqueeDisplay() {
       style={{
         width: '100%',
         height: '100%',
-        padding: `${margin}vmin`,
+        padding: `calc(var(--display-min, 100vmin) * ${margin / 100})`,
         boxSizing: 'border-box',
         overflow: 'hidden',
       }}
