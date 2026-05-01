@@ -52,9 +52,14 @@ export function App() {
     const el = displayRef.current;
     if (!el) return;
     const apply = (w: number, h: number) => {
-      el.style.setProperty('--display-w', `${w}px`);
-      el.style.setProperty('--display-h', `${h}px`);
-      el.style.setProperty('--display-min', `${Math.min(w, h)}px`);
+      // Round to integers — sub-pixel CSS var values composed with
+      // transform: translate(-50%) caused tiny but visible centering drift
+      // on iOS Safari where the rotated wrapper appeared off-center.
+      const rw = Math.round(w);
+      const rh = Math.round(h);
+      el.style.setProperty('--display-w', `${rw}px`);
+      el.style.setProperty('--display-h', `${rh}px`);
+      el.style.setProperty('--display-min', `${Math.min(rw, rh)}px`);
     };
     apply(el.offsetWidth, el.offsetHeight);
     const ro = new ResizeObserver(([entry]) => {
