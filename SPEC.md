@@ -145,7 +145,7 @@ Tab state is local (`useState`) — not persisted across sessions; defaults to `
 
 ## ConfirmButton
 
-Reusable double-tap-to-confirm pattern (`src/components/ui/ConfirmButton.tsx`). First click arms the button (label switches to a confirmation phrase), second click within `timeoutMs` (default 3000) fires `onConfirm`. Used for Reset and preset deletion. No `alert()` / native dialog ever — they break the standalone PWA feel and double-tap is more touch-friendly.
+Reusable double-tap-to-confirm pattern (`src/components/ui/ConfirmButton.tsx`). First click arms the button (label switches to a confirmation phrase), second click within `timeoutMs` (default 3000) fires `onConfirm`. Used for Reset, preset deletion, and the text-input clear button (28×28 icon variant in the Text tab section header, hidden when text is empty). No `alert()` / native dialog ever — they break the standalone PWA feel and double-tap is more touch-friendly.
 
 ## i18n (`src/lib/i18n.ts`)
 

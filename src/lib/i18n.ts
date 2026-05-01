@@ -19,6 +19,7 @@ const ZH: Dict = {
 
   'text.label': '文字',
   'text.placeholder': '輸入要顯示的文字（可多行）',
+  'text.clear': '清除文字',
 
   'speed.label': '跑馬燈速度',
   'speed.unit': 'px/秒',
@@ -76,6 +77,7 @@ const EN: Dict = {
 
   'text.label': 'Text',
   'text.placeholder': 'Enter text to display (multi-line supported)',
+  'text.clear': 'Clear text',
 
   'speed.label': 'Marquee speed',
   'speed.unit': 'px/s',

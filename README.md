@@ -40,7 +40,7 @@ The drawer is split into three tabs to keep things scannable:
 | Style | text color · background color · color presets · reset colors |
 | Other | rotate 90° · fullscreen · language |
 
-Reset only resets colors — it never touches your text, mode, speed, or rotation. Destructive actions (reset, preset delete) confirm by tapping twice — no popup dialog.
+Reset only resets colors — it never touches your text, mode, speed, or rotation. Destructive actions (reset, preset delete, text clear) confirm by tapping twice — no popup dialog.
 
 ## Deploy
 
