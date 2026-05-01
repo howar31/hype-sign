@@ -28,6 +28,10 @@ const ZH: Dict = {
 
   'margin.label': '邊界寬度',
   'margin.unit': '%',
+  'margin.note': '以視窗短邊百分比為單位；背景仍會滿版至邊緣',
+
+  'weight.label': '字體粗細',
+  'weight.note': '若目前字體不支援該粗細，會自動套用最接近的可用值',
 
   'rotate.label': '旋轉畫面',
   'rotate.button': '旋轉 90°',
@@ -102,6 +106,10 @@ const EN: Dict = {
 
   'margin.label': 'Edge margin',
   'margin.unit': '%',
+  'margin.note': "Percentage of the viewport's shorter side; background still fills edge-to-edge",
+
+  'weight.label': 'Font weight',
+  'weight.note': "If the current font doesn't ship this weight, the closest available one is used",
 
   'rotate.label': 'Rotate display',
   'rotate.button': 'Rotate 90°',

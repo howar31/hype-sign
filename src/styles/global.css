@@ -26,8 +26,9 @@
 
   --blur-glass: blur(40px) saturate(180%);
 
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui,
-    'Segoe UI', 'Noto Sans TC', 'PingFang TC', sans-serif;
+  /* The canonical FONT_FAMILY string is set on documentElement at boot
+     (see main.tsx). Fallback covers the brief moment before JS runs. */
+  font-family: var(--font-family, system-ui, sans-serif);
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -302,6 +303,14 @@ input[type='range'] {
 .muted {
   color: var(--text-faint);
   font-size: 12px;
+}
+
+/* Slider + helper-note pairing — keeps the explanatory text snug against
+   its slider instead of inheriting the section-wide 10px gap. */
+.slider-with-note {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .value-pill {

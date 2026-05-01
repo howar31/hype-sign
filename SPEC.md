@@ -85,7 +85,8 @@ type Settings = {
   marqueeSpeed: number;        // 100–2000 (px/s)
   rotation: Rotation;
   lang: Lang;
-  margin: number;              // 0–15 (vmin units of padding around text)
+  margin: number;              // 0–25 (vmin units of padding around text)
+  fontWeight: number;          // 100–900 (snapped to 100s)
 };
 
 type Preset     = { id; name; color: ColorValue }; // single-color preset (was {textColor,bgColor} pair before persist v2)
@@ -94,7 +95,7 @@ type TextPreset = { id; name; text };              // text-content preset
 
 Persisted under `hype-sign:v1` / version 2. v1 → v2 migration in `settingsStore.ts` splits each old `{textColor, bgColor}` preset into two single-color presets named `…(字)` and `…(底)` so user data isn't lost.
 
-`DEFAULT_SETTINGS` ships text=`'Hype Sign\nSettings ↗'` (second line points first-time users to the floating settings button at the top-right), white-on-black, static mode, 400 px/s, no rotation, zh-TW, `margin=0`.
+`DEFAULT_SETTINGS` ships text=`'Hype Sign\nSettings ↗'` (second line points first-time users to the floating settings button at the top-right), white-on-black, static mode, 400 px/s, no rotation, zh-TW, `margin=0`, `fontWeight=800`.
 
 ## Store (`src/store/settingsStore.ts`)
 
@@ -104,7 +105,8 @@ Single zustand store, all actions live here; components only `useSettings(s => s
 |---|---|
 | `setText`, `setTextColor`, `setBgColor`, `setMode`, `setMarqueeSpeed`, `setRotation`, `setLang` | Trivial setters |
 | `setMarqueeSpeed` | Clamps to `[MIN_SPEED, MAX_SPEED]` and rounds |
-| `setMargin` | Clamps to `[MIN_MARGIN, MAX_MARGIN]` (0–15) and rounds. Applied as `padding: ${margin}vmin` on each display's outer wrapper, so the bg color still fills the full canvas while the text content shrinks |
+| `setMargin` | Clamps to `[MIN_MARGIN, MAX_MARGIN]` (0–25) and rounds. Applied as `padding: ${margin}vmin` on each display's outer wrapper, so the bg color still fills the full canvas while the text content shrinks |
+| `setFontWeight` | Snaps to the nearest multiple of 100 within `[MIN_FONT_WEIGHT, MAX_FONT_WEIGHT]` (100–900). Applied to `<text>` in both displays and to the canvas font string in `measureLineWidth`, so width measurement matches what's rendered |
 | `cycleRotation` | 0 → 90 → 180 → 270 → 0 |
 | `resetTextColor` / `resetBgColor` | Set the named color back to its default (white text / black bg). The two are independent — resetting tint never touches backdrop |
 | `savePreset(name, color)` | Append a single-color `Preset` from the explicit `color` argument (the active editor passes its current `textColor` or `bgColor`) |
@@ -147,7 +149,7 @@ Drawer with four tabs (in order):
 - **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), text presets, clear-text button at end
 - **Tint** (`字色`) — text-color editor, save-current-color form, shared color preset list (apply hits text), reset-tint button at end
 - **Backdrop** (`底色`) — background-color editor, save-current-color form, shared color preset list (apply hits bg), reset-backdrop button at end
-- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, language toggle
+- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, font-weight slider, language toggle
 
 `ClearTextButton`, `ResetColorButton(tint)`, and `ResetColorButton(bg)` all live at the bottom of their respective tabs as identical-looking danger ConfirmButtons. The two color-reset buttons are independent: resetting tint clears textColor and re-derives the ColorEditor's solid/linear/radial snapshots via a `key` bump, but does not touch backdrop's snapshots, and vice versa.
 
@@ -168,6 +170,14 @@ Two visual variants via `variant` prop (default `'danger'`):
 CSS specificity: `.btn.danger.armed` outranks `.btn.armed`, so danger buttons keep the red armed look even though both classes match.
 
 No `alert()` / native dialog is used anywhere — they break the standalone PWA feel and double-tap is more touch-friendly.
+
+## Font
+
+`measureText.ts` exports the canonical `FONT_FAMILY` string — a system-font fallback chain. `main.tsx` reads it on boot and writes the value into the `--font-family` CSS custom property on `documentElement`. `global.css` then references `var(--font-family, system-ui, sans-serif)` so canvas-based width measurement and the actual rendered CSS font cannot drift apart. Change the chain in `measureText.ts` only.
+
+Cross-device, the rendered font is whatever the device has (SF Pro on Apple, Segoe UI on Windows, Roboto/Noto Sans on Android, PingFang/JhengHei/Noto for CJK). Visual consistency across devices therefore varies — bundling a web font (Inter Variable for Latin, optionally Noto Sans TC subset for Chinese) is a known follow-up but not yet implemented.
+
+`fontWeight` is a user setting (100–900, step 100, default 800). The CSS spec accepts 1–1000 but only the listed steps map to OpenType weights. If the active font lacks the requested weight, the browser substitutes the closest available — both display surfaces and canvas measurement use the same value, so the substitution is consistent.
 
 ## i18n (`src/lib/i18n.ts`)
 

@@ -47,6 +47,8 @@ export type Settings = {
   lang: Lang;
   /** Padding between text content and viewport edges, in vmin units (0–15). */
   margin: number;
+  /** Display font weight (400–900, snapped to multiples of 100). */
+  fontWeight: number;
 };
 
 export const DEFAULT_TEXT_COLOR: ColorValue = { type: 'solid', color: '#FFFFFF' };
@@ -61,12 +63,16 @@ export const DEFAULT_SETTINGS: Settings = {
   rotation: 0,
   lang: 'zh-TW',
   margin: 0,
+  fontWeight: 800,
 };
 
 export const MIN_SPEED = 100;
 export const MAX_SPEED = 2000;
 export const MIN_MARGIN = 0;
-export const MAX_MARGIN = 15;
+export const MAX_MARGIN = 25;
+export const MIN_FONT_WEIGHT = 100;
+export const MAX_FONT_WEIGHT = 900;
+export const FONT_WEIGHT_STEP = 100;
 
 export function makeId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

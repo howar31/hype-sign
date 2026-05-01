@@ -4,7 +4,6 @@ import { colorToCss } from '../../lib/colorToCss';
 import { GradientDef, fillFor } from '../../lib/colorToSvg';
 import {
   FONT_FAMILY,
-  FONT_WEIGHT,
   LINE_HEIGHT_FACTOR,
   REFERENCE_FONT_SIZE,
   measureLineWidth,
@@ -17,6 +16,7 @@ export function MarqueeDisplay() {
   const textColor = useSettings((s) => s.textColor);
   const bgColor = useSettings((s) => s.bgColor);
   const margin = useSettings((s) => s.margin);
+  const fontWeight = useSettings((s) => s.fontWeight);
 
   const [containerRef, size] = useElementSize<HTMLDivElement>();
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -33,7 +33,10 @@ export function MarqueeDisplay() {
 
   const fontSize = REFERENCE_FONT_SIZE;
   const lineHeight = fontSize * LINE_HEIGHT_FACTOR;
-  const textWidth = useMemo(() => measureLineWidth(joined, fontSize), [joined, fontSize]);
+  const textWidth = useMemo(
+    () => measureLineWidth(joined, fontSize, fontWeight),
+    [joined, fontSize, fontWeight],
+  );
 
   const scale = size.h > 0 ? size.h / lineHeight : 1;
   const scaledWidth = Math.max(1, textWidth * scale);
@@ -107,7 +110,7 @@ export function MarqueeDisplay() {
                 x={0}
                 y={lineHeight * 0.85}
                 fontFamily={FONT_FAMILY}
-                fontWeight={FONT_WEIGHT}
+                fontWeight={fontWeight}
                 fontSize={fontSize}
                 fill={fill}
               >

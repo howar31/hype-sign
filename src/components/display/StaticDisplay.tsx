@@ -4,7 +4,6 @@ import { colorToCss } from '../../lib/colorToCss';
 import { GradientDef, fillFor } from '../../lib/colorToSvg';
 import {
   FONT_FAMILY,
-  FONT_WEIGHT,
   LINE_HEIGHT_FACTOR,
   REFERENCE_FONT_SIZE,
   measureLineWidth,
@@ -22,6 +21,7 @@ export function StaticDisplay() {
   const textColor = useSettings((s) => s.textColor);
   const bgColor = useSettings((s) => s.bgColor);
   const margin = useSettings((s) => s.margin);
+  const fontWeight = useSettings((s) => s.fontWeight);
 
   const reactId = useId();
   const gradId = `text-grad-${reactId.replace(/:/g, '')}`;
@@ -38,8 +38,8 @@ export function StaticDisplay() {
   const lineHeight = fontSize * LINE_HEIGHT_FACTOR;
 
   const widths = useMemo(
-    () => lines.map((l) => measureLineWidth(l, fontSize)),
-    [lines, fontSize],
+    () => lines.map((l) => measureLineWidth(l, fontSize, fontWeight)),
+    [lines, fontSize, fontWeight],
   );
   const estMaxWidth = Math.max(1, ...widths);
   const estTotalHeight = Math.max(1, lines.length * lineHeight);
@@ -78,7 +78,7 @@ export function StaticDisplay() {
       }
       return next;
     });
-  }, [text, fontSize, lineHeight, lines.length]);
+  }, [text, fontSize, lineHeight, lines.length, fontWeight]);
 
   const isEmpty = lines.every((l) => l.trim() === '');
 
@@ -110,7 +110,7 @@ export function StaticDisplay() {
             ref={textRef}
             x={0}
             fontFamily={FONT_FAMILY}
-            fontWeight={FONT_WEIGHT}
+            fontWeight={fontWeight}
             fontSize={fontSize}
             fill={fill}
             textAnchor="middle"

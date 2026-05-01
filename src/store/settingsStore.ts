@@ -4,8 +4,11 @@ import {
   DEFAULT_BG_COLOR,
   DEFAULT_SETTINGS,
   DEFAULT_TEXT_COLOR,
+  FONT_WEIGHT_STEP,
+  MAX_FONT_WEIGHT,
   MAX_MARGIN,
   MAX_SPEED,
+  MIN_FONT_WEIGHT,
   MIN_MARGIN,
   MIN_SPEED,
   makeId,
@@ -33,6 +36,7 @@ type Actions = {
   cycleRotation: () => void;
   setLang: (lang: Lang) => void;
   setMargin: (n: number) => void;
+  setFontWeight: (n: number) => void;
   resetTextColor: () => void;
   resetBgColor: () => void;
   savePreset: (name: string, color: ColorValue) => void;
@@ -69,6 +73,12 @@ export const useSettings = create<State & Actions>()(
       setLang: (lang) => set({ lang }),
       setMargin: (n) =>
         set({ margin: Math.max(MIN_MARGIN, Math.min(MAX_MARGIN, Math.round(n))) }),
+      setFontWeight: (n) => {
+        const snapped = Math.round(n / FONT_WEIGHT_STEP) * FONT_WEIGHT_STEP;
+        set({
+          fontWeight: Math.max(MIN_FONT_WEIGHT, Math.min(MAX_FONT_WEIGHT, snapped)),
+        });
+      },
       resetTextColor: () => set({ textColor: DEFAULT_TEXT_COLOR }),
       resetBgColor: () => set({ bgColor: DEFAULT_BG_COLOR }),
 
@@ -164,6 +174,7 @@ export const useSettings = create<State & Actions>()(
         rotation: s.rotation,
         lang: s.lang,
         margin: s.margin,
+        fontWeight: s.fontWeight,
         presets: s.presets,
         textPresets: s.textPresets,
       }),

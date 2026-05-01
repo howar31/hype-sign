@@ -16,15 +16,18 @@ export function MarginSlider() {
           {t('margin.unit')}
         </span>
       </div>
-      <input
-        type="range"
-        className="range"
-        min={MIN_MARGIN}
-        max={MAX_MARGIN}
-        step={1}
-        value={margin}
-        onChange={(e) => setMargin(Number(e.target.value))}
-      />
+      <div className="slider-with-note">
+        <input
+          type="range"
+          className="range"
+          min={MIN_MARGIN}
+          max={MAX_MARGIN}
+          step={1}
+          value={margin}
+          onChange={(e) => setMargin(Number(e.target.value))}
+        />
+        <span className="muted">{t('margin.note')}</span>
+      </div>
     </div>
   );
 }
