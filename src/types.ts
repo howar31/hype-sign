@@ -45,23 +45,28 @@ export type Settings = {
   marqueeSpeed: number; // 100–2000 px/s
   rotation: Rotation;
   lang: Lang;
+  /** Padding between text content and viewport edges, in vmin units (0–15). */
+  margin: number;
 };
 
 export const DEFAULT_TEXT_COLOR: ColorValue = { type: 'solid', color: '#FFFFFF' };
 export const DEFAULT_BG_COLOR: ColorValue = { type: 'solid', color: '#000000' };
 
 export const DEFAULT_SETTINGS: Settings = {
-  text: 'HYPE\nSIGN',
+  text: 'Hype Sign\nSettings ↗',
   textColor: DEFAULT_TEXT_COLOR,
   bgColor: DEFAULT_BG_COLOR,
   mode: 'static',
   marqueeSpeed: 400,
   rotation: 0,
   lang: 'zh-TW',
+  margin: 0,
 };
 
 export const MIN_SPEED = 100;
 export const MAX_SPEED = 2000;
+export const MIN_MARGIN = 0;
+export const MAX_MARGIN = 15;
 
 export function makeId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

@@ -4,7 +4,9 @@ import {
   DEFAULT_BG_COLOR,
   DEFAULT_SETTINGS,
   DEFAULT_TEXT_COLOR,
+  MAX_MARGIN,
   MAX_SPEED,
+  MIN_MARGIN,
   MIN_SPEED,
   makeId,
   type ColorValue,
@@ -30,6 +32,7 @@ type Actions = {
   setRotation: (r: Rotation) => void;
   cycleRotation: () => void;
   setLang: (lang: Lang) => void;
+  setMargin: (n: number) => void;
   resetTextColor: () => void;
   resetBgColor: () => void;
   savePreset: (name: string, color: ColorValue) => void;
@@ -64,6 +67,8 @@ export const useSettings = create<State & Actions>()(
         set({ rotation: next });
       },
       setLang: (lang) => set({ lang }),
+      setMargin: (n) =>
+        set({ margin: Math.max(MIN_MARGIN, Math.min(MAX_MARGIN, Math.round(n))) }),
       resetTextColor: () => set({ textColor: DEFAULT_TEXT_COLOR }),
       resetBgColor: () => set({ bgColor: DEFAULT_BG_COLOR }),
 
@@ -158,6 +163,7 @@ export const useSettings = create<State & Actions>()(
         marqueeSpeed: s.marqueeSpeed,
         rotation: s.rotation,
         lang: s.lang,
+        margin: s.margin,
         presets: s.presets,
         textPresets: s.textPresets,
       }),

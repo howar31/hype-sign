@@ -1,6 +1,7 @@
 import { RotateButton } from '../RotateButton';
 import { FullscreenButton } from '../FullscreenButton';
 import { LanguageToggle } from '../LanguageToggle';
+import { MarginSlider } from '../MarginSlider';
 
 export function OtherSection() {
   return (
@@ -9,6 +10,7 @@ export function OtherSection() {
         <RotateButton />
         <FullscreenButton />
       </div>
+      <MarginSlider />
       <LanguageToggle />
     </>
   );

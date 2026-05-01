@@ -18,6 +18,7 @@
 - **Fully offline** — installs as a PWA, works without network after first load
 - **Liquid-Glass UI** — translucent backdrop-blurred settings panel
 - **Tap to hide controls** — single tap on the canvas hides / reveals the floating settings button so the display can stay uncluttered
+- **Edge margin slider** — set how much breathing room sits between the text and the screen edges (0–15% of the viewport's short side); background fills edge-to-edge regardless
 
 ## Quick start
 
@@ -40,7 +41,7 @@ The drawer is split into four tabs to keep things scannable:
 | Text | text input · static/marquee mode · marquee speed · text presets · clear text |
 | Tint | text-color editor · save current color · shared color presets (apply to text) · reset tint |
 | Backdrop | background-color editor · save current color · shared color presets (apply to bg) · reset backdrop |
-| Settings | rotate 90° · fullscreen · language |
+| Settings | rotate 90° · fullscreen · edge margin · language |
 
 Color presets are single-color snapshots: a preset stores **one** ColorValue (solid / linear / radial) and you decide at apply-time whether it goes onto the text or the background. Both color tabs share the same preset list. Each preset row shows a tiny type icon next to the swatch (with hover/tap tooltip) so you can tell solid / linear / radial apart even when a multi-stop gradient renders too small.
 

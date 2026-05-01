@@ -16,6 +16,7 @@ export function MarqueeDisplay() {
   const speed = useSettings((s) => s.marqueeSpeed);
   const textColor = useSettings((s) => s.textColor);
   const bgColor = useSettings((s) => s.bgColor);
+  const margin = useSettings((s) => s.margin);
 
   const [containerRef, size] = useElementSize<HTMLDivElement>();
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -62,50 +63,60 @@ export function MarqueeDisplay() {
 
   return (
     <div
-      ref={containerRef}
       style={{
         width: '100%',
         height: '100%',
         background: bg,
-        position: 'relative',
+        padding: `${margin}vmin`,
+        boxSizing: 'border-box',
         overflow: 'hidden',
       }}
     >
-      {joined ? (
-        <div
-          ref={innerRef}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: scaledWidth,
-            height: size.h,
-            willChange: 'transform',
-          }}
-        >
-          <svg
-            width={scaledWidth}
-            height={size.h}
-            viewBox={`0 0 ${Math.max(1, textWidth)} ${lineHeight}`}
-            preserveAspectRatio="none"
-            style={{ display: 'block' }}
+      <div
+        ref={containerRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {joined ? (
+          <div
+            ref={innerRef}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: scaledWidth,
+              height: size.h,
+              willChange: 'transform',
+            }}
           >
-            <defs>
-              <GradientDef color={textColor} id={gradId} />
-            </defs>
-            <text
-              x={0}
-              y={lineHeight * 0.85}
-              fontFamily={FONT_FAMILY}
-              fontWeight={FONT_WEIGHT}
-              fontSize={fontSize}
-              fill={fill}
+            <svg
+              width={scaledWidth}
+              height={size.h}
+              viewBox={`0 0 ${Math.max(1, textWidth)} ${lineHeight}`}
+              preserveAspectRatio="none"
+              style={{ display: 'block' }}
             >
-              {joined}
-            </text>
-          </svg>
-        </div>
-      ) : null}
+              <defs>
+                <GradientDef color={textColor} id={gradId} />
+              </defs>
+              <text
+                x={0}
+                y={lineHeight * 0.85}
+                fontFamily={FONT_FAMILY}
+                fontWeight={FONT_WEIGHT}
+                fontSize={fontSize}
+                fill={fill}
+              >
+                {joined}
+              </text>
+            </svg>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

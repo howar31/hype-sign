@@ -26,6 +26,9 @@ const ZH: Dict = {
   'speed.label': '跑馬燈速度',
   'speed.unit': 'px/秒',
 
+  'margin.label': '邊界寬度',
+  'margin.unit': '%',
+
   'rotate.label': '旋轉畫面',
   'rotate.button': '旋轉 90°',
 
@@ -96,6 +99,9 @@ const EN: Dict = {
 
   'speed.label': 'Marquee speed',
   'speed.unit': 'px/s',
+
+  'margin.label': 'Edge margin',
+  'margin.unit': '%',
 
   'rotate.label': 'Rotate display',
   'rotate.button': 'Rotate 90°',

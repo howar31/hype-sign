@@ -21,6 +21,7 @@ export function StaticDisplay() {
   const text = useSettings((s) => s.text);
   const textColor = useSettings((s) => s.textColor);
   const bgColor = useSettings((s) => s.bgColor);
+  const margin = useSettings((s) => s.margin);
 
   const reactId = useId();
   const gradId = `text-grad-${reactId.replace(/:/g, '')}`;
@@ -90,6 +91,8 @@ export function StaticDisplay() {
         display: 'grid',
         placeItems: 'center',
         overflow: 'hidden',
+        padding: `${margin}vmin`,
+        boxSizing: 'border-box',
       }}
     >
       {isEmpty ? null : (
