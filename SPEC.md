@@ -303,6 +303,25 @@ When rotated 90°/270°, pre-rotation width = parent height and pre-rotation hei
 
 **Subtle gotcha — `height: 100%` does NOT give "parent width":** `100%` on the height property always resolves to the parent's *height*. When you want "parent width" on the height property, spell out the actual width — the `--display-w` var here.
 
+## Local development
+
+```bash
+npm install
+npm run dev        # dev server on http://localhost:5173
+npm run build      # production build into dist/
+npm run preview    # serve the production build locally
+npm run typecheck  # tsc --noEmit
+npm run smoke      # headless puppeteer smoke suite (Node 18 + global puppeteer)
+```
+
+Node 20+ is required for dev/build. The `smoke` script needs Node 18 because it relies on a globally-installed puppeteer (per `~/.claude/skills/browser-automation`); switch via `nvm use 18`.
+
+The smoke suite covers layout integrity, rotation centering (measures actual glyph ink), panel modes, drag clamps, persistence + migrations, i18n parity, and visual snapshots. Headless Puppeteer reproduces layout but **not** iOS-specific quirks — real-device validation is still required for iOS PWA changes. Filter with `npm run smoke -- --only=panel`.
+
+## Why the service worker is non-optional
+
+There is no network feature in the app, but the app's *own* files (HTML / JS / CSS / icons) still need a server to deliver them. The service worker (configured in `vite.config.ts` via `vite-plugin-pwa`'s Workbox preset) precaches the entire app shell on first load so subsequent visits are zero-network — which is the entire point in venues with bad reception. `registerType: 'autoUpdate'` means new SW versions activate at next launch, no user prompt.
+
 ## Deploy
 
 `.github/workflows/deploy.yml` runs on push to `main`:
@@ -312,7 +331,12 @@ When rotated 90°/270°, pre-rotation width = parent height and pre-rotation hei
 
 The repository's GitHub Pages is configured with `build_type=workflow`. Account-level custom domain `lab.howar31.com` resolves to `lab.howar31.com/hype-sign/`.
 
-To fork to a different repo name: change `base` in `vite.config.ts` and `start_url`/`scope` in the PWA manifest there.
+After forking to a new GitHub repo:
+1. Settings → Pages → **Source: GitHub Actions**
+2. Push to `main` — the workflow runs typecheck, build, and publish
+3. Open `https://<username>.github.io/<repo-name>/`
+
+To fork under a different repo name: change `base` in `vite.config.ts` and `start_url` / `scope` in the PWA manifest there.
 
 ## README screenshots / hero gif
 
@@ -320,14 +344,18 @@ To fork to a different repo name: change `base` in `vite.config.ts` and `start_u
 
 `scripts/capture-screenshots.cjs` is a self-contained Puppeteer driver that produces every image in `docs/screenshots/`:
 
-- `hero.gif` — 720×360 marquee at 15fps (3s loop), encoded via ffmpeg two-pass palette (`palettegen` + `paletteuse=dither=bayer:bayer_scale=5`). Source frames captured via CDP `Page.startScreencast` at `everyNthFrame: 2` (~30fps native), then downsampled at encode time to keep file size under 1.5 MB.
-- 7 PNGs: `static-hero`, `cheer-board`, `drawer-gradient`, `drawer-presets`, `mobile-portrait`, `drawer-zh`, `drawer-en` (the last two are paired side-by-side in README to show i18n parity without needing image-compositing tools at build time).
+- `hero.gif` — 720×360 marquee at 15fps (3s loop), encoded via ffmpeg two-pass palette (`palettegen` + `paletteuse=dither=bayer:bayer_scale=5`). Source frames captured via CDP `Page.startScreencast` at `everyNthFrame: 2` (~30fps native), then downsampled at encode time to keep file size under 2 MB.
+- 10 PNGs covering panel + canvas + bilingual + mobile:
+  - Desktop with panel open: `panel-text` (Text tab, multi-line auto-fit + font weight slider), `panel-tint` (Tint tab gradient editor with stops bar + sliders), `panel-floating` (Floating mode + Backdrop tab — draggable window with shadow + bottom resize handle), `panel-presets` (Tint tab scrolled to preset list with 6 saved single-color presets), `panel-rotated` (Settings tab + canvas rotated 90°).
+  - Desktop without panel: `cheer-board` (the only no-panel scene; bright yellow + black 加油! showing the iconic cheering-board look once the panel is dismissed).
+  - Mobile bottom sheet: `mobile-text` (Text tab with top resize handle visible), `mobile-tint` (gradient editor on small screen).
+  - Bilingual: `drawer-zh` / `drawer-en` (Settings tab paired side-by-side in README to show i18n parity without image-compositing tools at build time).
 
 Pipeline:
 1. Spawn vite dev server (`npx vite --port 5173 --strictPort`), wait for `Local:` log.
-2. Per scene: open a fresh `puppeteer.newPage()`, register `evaluateOnNewDocument` that writes `localStorage['hype-sign:v1'] = { state, version: 2 }` so zustand's persist middleware rehydrates from it on first load.
+2. Per scene: open a fresh `puppeteer.newPage()`, register `evaluateOnNewDocument` that writes `localStorage['hype-sign:v1'] = { state, version: 3 }` so zustand's persist middleware rehydrates from it on first load. Each scene's seed state includes the new persisted fields (`panelMode`, `floatingPos`, `mobilePanelHeight`, `floatingHeight`).
 3. `goto` + `waitForSelector('.display-root')` + 600ms settle (lets `StaticDisplay`'s `useLayoutEffect` getBBox run).
-4. For drawer-open scenes: programmatically click `button.settings-toggle`, wait 450ms for the slide animation, click the target tab in `.drawer-tabs`. Then inject CSS to hide the toggle (so it doesn't appear in the screenshot). For canvas-only scenes: hide both `.settings-toggle` AND closed `.drawer` / `.drawer-backdrop` to avoid faint translucent edge artifacts.
+4. For drawer-open scenes: `page.click('.display-root')` triggers the canvas-click toggle (the new UX — there is no gear button anymore), wait 450ms for the slide animation, click the target tab in `.drawer-tabs`. The `panel-presets` scene additionally scrolls `.drawer-body` to its bottom so the saved-preset rows are in frame. For canvas-only scenes: inject `.drawer { display: none !important }` to hide the closed-state shadow / border so it doesn't bleed into the canvas.
 5. `page.screenshot({ path, type: 'png' })`.
 
 Hero capture uses CDP screencast (not a `screenshot()` loop) because Puppeteer's screenshot is sync-blocking per call and would yield irregular frame intervals; screencast streams at native rAF cadence.

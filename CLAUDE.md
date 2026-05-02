@@ -31,10 +31,10 @@ See [SPEC.md](SPEC.md).
 - Chinese terminology: user-saved snapshots are 「樣板」 (templates), not 「預設」 (which means "default" in zh-TW and is ambiguous). English stays "preset".
 
 ## Deploy
-GitHub Actions on push to `main` → GitHub Pages. Live at `http://lab.howar31.com/hype-sign/`. Vite `base` is `/hype-sign/`; manifest `scope` and `start_url` match.
+GitHub Actions on push to `main` → GitHub Pages. Live at `https://lab.howar31.com/hype-sign/`. Vite `base` is `/hype-sign/`; manifest `scope` and `start_url` match. Repo is MIT-licensed (root `LICENSE`).
 
 ## Tooling
-- README screenshots + hero gif live in `docs/screenshots/`. Regenerate with `nvm use 18 && NODE_PATH=$(npm root -g) node scripts/capture-screenshots.cjs` (Puppeteer headless + ffmpeg palette encode). Add `--only=<id>` to recapture a single scene. Scenes (state seeded via `localStorage hype-sign:v1`) are defined inline in the script.
+- README screenshots + hero gif live in `docs/screenshots/`. Regenerate with `nvm use 18 && NODE_PATH=$(npm root -g) node scripts/capture-screenshots.cjs` (Puppeteer headless + ffmpeg palette encode). Add `--only=<id>` to recapture a single scene. Scenes (state seeded via `localStorage hype-sign:v1` at version 3) are defined inline in the script. Current set: 1 hero gif + 10 PNGs (`panel-text`, `panel-tint`, `panel-floating`, `panel-presets`, `panel-rotated`, `cheer-board`, `mobile-text`, `mobile-tint`, `drawer-zh`, `drawer-en`). Drawer-open scenes use `page.click('.display-root')` to trigger the canvas-toggle UX (no gear button); canvas-only scenes inject `.drawer { display: none }` to hide the closed-state shadow.
 - Smoke suite at `scripts/smoke.cjs` (run via `npm run smoke`). Covers: layout integrity, static + marquee rotation centering (measures `<svg text>` ink rect, NOT the SVG container — see `reference_ios_pwa_layout.md` for why), panel modes, drag clamps, settings actions, color stop-bar axis, persistence + v2→v3 migration, i18n key parity, console-error detection, plus visual snapshots. Each test isolates state by clearing `localStorage` in the page setup.
 
 ## Files where decisions live

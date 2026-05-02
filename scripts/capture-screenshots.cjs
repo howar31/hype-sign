@@ -10,21 +10,40 @@ const OUT_DIR = path.join(REPO, 'docs/screenshots');
 const FRAMES_DIR = '/tmp/hype-frames';
 const URL = 'http://localhost:5173/hype-sign/';
 const STORE_KEY = 'hype-sign:v1';
-const STORE_VERSION = 2;
+const STORE_VERSION = 3;
 
-// Tab indices in .drawer-tabs (0-based, in render order).
+// Tab indices in .drawer-tabs (0-based, in render order from SettingsPanel TABS).
 const TAB = { text: 0, tint: 1, backdrop: 2, settings: 3 };
 
 const onlyArg = process.argv.find((a) => a.startsWith('--only='));
 const ONLY = onlyArg ? onlyArg.slice('--only='.length).split(',') : null;
 const want = (id) => !ONLY || ONLY.includes(id);
 
-const HERO_STATE = {
-  text: 'ENCORE!! 再來一首',
-  mode: 'marquee',
+// Default fields seeded into every scene's state. Individual scenes spread
+// over this and override what they care about.
+const DEFAULTS = {
+  text: 'HYPE',
+  mode: 'static',
   marqueeSpeed: 380,
   rotation: 0,
   lang: 'zh-TW',
+  margin: 6,
+  fontWeight: 800,
+  textColor: { type: 'solid', color: '#ffffff' },
+  bgColor: { type: 'solid', color: '#0f172a' },
+  presets: [],
+  textPresets: [],
+  panelMode: 'split',
+  floatingPos: { x: 720, y: 100 },
+  mobilePanelHeight: 500,
+  floatingHeight: 540,
+};
+
+const HERO_STATE = {
+  ...DEFAULTS,
+  text: 'ENCORE!! 再來一首',
+  mode: 'marquee',
+  marqueeSpeed: 380,
   margin: 4,
   fontWeight: 900,
   textColor: {
@@ -36,127 +55,208 @@ const HERO_STATE = {
     ],
   },
   bgColor: { type: 'solid', color: '#000000' },
-  presets: [],
-  textPresets: [],
 };
 
 const PRESETS_DEMO = [
-  { id: 'p1', name: 'Sunset',     color: { type: 'radial', cx: 50, cy: 50, stops: [
+  { id: 'p1', name: 'Sunset', color: { type: 'radial', cx: 50, cy: 50, stops: [
     { id: 's1', color: '#fb923c', position: 0 },
     { id: 's2', color: '#ec4899', position: 60 },
     { id: 's3', color: '#7c3aed', position: 100 },
   ]}},
-  { id: 'p2', name: 'Ocean',      color: { type: 'linear', angle: 200, stops: [
+  { id: 'p2', name: 'Ocean', color: { type: 'linear', angle: 200, stops: [
     { id: 's1', color: '#22d3ee', position: 0 },
     { id: 's2', color: '#1d4ed8', position: 100 },
   ]}},
-  { id: 'p3', name: 'Neon Pink',  color: { type: 'solid', color: '#ff2bd6' }},
-  { id: 'p4', name: 'Vaporwave',  color: { type: 'linear', angle: 135, stops: [
+  { id: 'p3', name: 'Neon Pink', color: { type: 'solid', color: '#ff2bd6' }},
+  { id: 'p4', name: 'Vaporwave', color: { type: 'linear', angle: 135, stops: [
     { id: 's1', color: '#ff79c6', position: 0 },
     { id: 's2', color: '#8be9fd', position: 100 },
   ]}},
-  { id: 'p5', name: 'Ember',      color: { type: 'radial', cx: 50, cy: 60, stops: [
+  { id: 'p5', name: 'Ember', color: { type: 'radial', cx: 50, cy: 60, stops: [
     { id: 's1', color: '#fde047', position: 0 },
     { id: 's2', color: '#dc2626', position: 50 },
     { id: 's3', color: '#0a0a0a', position: 100 },
   ]}},
-  { id: 'p6', name: 'Lime',       color: { type: 'solid', color: '#84cc16' }},
+  { id: 'p6', name: 'Lime', color: { type: 'solid', color: '#84cc16' }},
 ];
 
+const WARM_GRADIENT = {
+  type: 'linear', angle: 135,
+  stops: [
+    { id: 's1', color: '#fbbf24', position: 0 },
+    { id: 's2', color: '#f43f5e', position: 50 },
+    { id: 's3', color: '#8b5cf6', position: 100 },
+  ],
+};
+
 const SCENES = [
+  // 1. Split + Text tab — multi-line auto-fit + font weight + text editing UX.
   {
-    id: 'static-hero',
+    id: 'panel-text',
     viewport: { width: 1280, height: 800 },
+    drawer: true, tab: TAB.text,
     state: {
+      ...DEFAULTS,
       text: 'HYPE\nSIGN',
-      mode: 'static',
-      marqueeSpeed: 400, rotation: 0, lang: 'zh-TW', margin: 8, fontWeight: 900,
-      textColor: { type: 'linear', angle: 135, stops: [
-        { id: 's1', color: '#fbbf24', position: 0 },
-        { id: 's2', color: '#f43f5e', position: 50 },
-        { id: 's3', color: '#8b5cf6', position: 100 },
-      ]},
+      fontWeight: 900,
+      margin: 6,
+      textColor: WARM_GRADIENT,
       bgColor: { type: 'solid', color: '#0f172a' },
-      presets: [], textPresets: [],
+      panelMode: 'split',
     },
   },
+  // 2. Split + Tint tab — gradient editor (stops bar + sliders).
+  {
+    id: 'panel-tint',
+    viewport: { width: 1280, height: 800 },
+    drawer: true, tab: TAB.tint,
+    state: {
+      ...DEFAULTS,
+      text: 'HYPE',
+      fontWeight: 900,
+      textColor: WARM_GRADIENT,
+      bgColor: { type: 'solid', color: '#0f172a' },
+      panelMode: 'split',
+    },
+  },
+  // 3. Floating + Backdrop tab — draggable window with shadow + bottom resize handle.
+  {
+    id: 'panel-floating',
+    viewport: { width: 1280, height: 800 },
+    drawer: true, tab: TAB.backdrop,
+    state: {
+      ...DEFAULTS,
+      text: 'GO!',
+      fontWeight: 900,
+      margin: 8,
+      textColor: { type: 'solid', color: '#ffffff' },
+      bgColor: {
+        type: 'linear', angle: 200,
+        stops: [
+          { id: 's1', color: '#0ea5e9', position: 0 },
+          { id: 's2', color: '#1e3a8a', position: 100 },
+        ],
+      },
+      panelMode: 'floating',
+      floatingPos: { x: 720, y: 110 },
+      floatingHeight: 540,
+    },
+  },
+  // 4. Split + Tint tab + 6 saved presets — preset library.
+  {
+    id: 'panel-presets',
+    viewport: { width: 1280, height: 800 },
+    drawer: true, tab: TAB.tint, scrollPanel: 'bottom',
+    state: {
+      ...DEFAULTS,
+      text: 'HYPE',
+      fontWeight: 900,
+      textColor: { type: 'solid', color: '#fb923c' },
+      bgColor: { type: 'solid', color: '#0f172a' },
+      presets: PRESETS_DEMO,
+      panelMode: 'split',
+    },
+  },
+  // 5. Split + Settings tab + rotated 90°.
+  {
+    id: 'panel-rotated',
+    viewport: { width: 1280, height: 800 },
+    drawer: true, tab: TAB.settings,
+    state: {
+      ...DEFAULTS,
+      text: 'HYPE\nSIGN',
+      mode: 'static',
+      rotation: 90,
+      fontWeight: 900,
+      margin: 6,
+      textColor: WARM_GRADIENT,
+      bgColor: { type: 'solid', color: '#0f172a' },
+      panelMode: 'split',
+    },
+  },
+  // 6. NO panel — solid yellow / black "加油!" cheer board.
   {
     id: 'cheer-board',
     viewport: { width: 1280, height: 800 },
     state: {
-      text: '加油！',
-      mode: 'static',
-      marqueeSpeed: 400, rotation: 0, lang: 'zh-TW', margin: 6, fontWeight: 900,
+      ...DEFAULTS,
+      text: '加油!',
+      fontWeight: 900,
+      margin: 6,
       textColor: { type: 'solid', color: '#0a0a0a' },
       bgColor: { type: 'solid', color: '#fde047' },
-      presets: [], textPresets: [],
     },
   },
+  // 7. Mobile bottom sheet — Text tab, top resize handle visible.
   {
-    id: 'drawer-gradient',
-    viewport: { width: 1280, height: 800 },
-    drawer: true, tab: TAB.tint,
-    state: { ...HERO_STATE, mode: 'static', text: 'HYPE' },
-  },
-  {
-    id: 'drawer-presets',
-    viewport: { width: 1280, height: 800 },
-    drawer: true, tab: TAB.tint,
-    state: {
-      text: 'HYPE',
-      mode: 'static', marqueeSpeed: 400, rotation: 0, lang: 'zh-TW', margin: 6, fontWeight: 900,
-      textColor: { type: 'linear', angle: 135, stops: [
-        { id: 's1', color: '#fbbf24', position: 0 },
-        { id: 's2', color: '#f43f5e', position: 100 },
-      ]},
-      bgColor: { type: 'solid', color: '#0f172a' },
-      presets: PRESETS_DEMO, textPresets: [],
-    },
-  },
-  {
-    id: 'mobile-portrait',
+    id: 'mobile-text',
     viewport: { width: 390, height: 844, deviceScaleFactor: 2 },
+    drawer: true, tab: TAB.text,
     state: {
+      ...DEFAULTS,
       text: 'GO\nTEAM',
-      mode: 'static', marqueeSpeed: 400, rotation: 0, lang: 'en', margin: 6, fontWeight: 800,
+      mode: 'static',
+      lang: 'en',
+      fontWeight: 800,
+      margin: 6,
       textColor: { type: 'solid', color: '#ffffff' },
-      bgColor: { type: 'linear', angle: 180, stops: [
-        { id: 's1', color: '#dc2626', position: 0 },
-        { id: 's2', color: '#7c2d12', position: 100 },
-      ]},
-      presets: [], textPresets: [],
+      bgColor: {
+        type: 'linear', angle: 180,
+        stops: [
+          { id: 's1', color: '#dc2626', position: 0 },
+          { id: 's2', color: '#7c2d12', position: 100 },
+        ],
+      },
+      panelMode: 'split',
+      mobilePanelHeight: 500,
     },
   },
+  // 8. Mobile bottom sheet — Tint tab gradient editor.
+  {
+    id: 'mobile-tint',
+    viewport: { width: 390, height: 844, deviceScaleFactor: 2 },
+    drawer: true, tab: TAB.tint,
+    state: {
+      ...DEFAULTS,
+      text: 'HYPE',
+      fontWeight: 900,
+      margin: 6,
+      textColor: WARM_GRADIENT,
+      bgColor: { type: 'solid', color: '#0f172a' },
+      panelMode: 'split',
+      mobilePanelHeight: 500,
+    },
+  },
+  // 9a. Settings tab in zh-TW.
   {
     id: 'drawer-zh',
     viewport: { width: 1280, height: 800 },
     drawer: true, tab: TAB.settings,
     state: {
+      ...DEFAULTS,
       text: 'HYPE\nSIGN',
-      mode: 'static', marqueeSpeed: 400, rotation: 0, lang: 'zh-TW', margin: 6, fontWeight: 900,
-      textColor: { type: 'linear', angle: 135, stops: [
-        { id: 's1', color: '#fbbf24', position: 0 },
-        { id: 's2', color: '#f43f5e', position: 50 },
-        { id: 's3', color: '#8b5cf6', position: 100 },
-      ]},
+      lang: 'zh-TW',
+      fontWeight: 900,
+      margin: 6,
+      textColor: WARM_GRADIENT,
       bgColor: { type: 'solid', color: '#0f172a' },
-      presets: [], textPresets: [],
+      panelMode: 'split',
     },
   },
+  // 9b. Settings tab in English.
   {
     id: 'drawer-en',
     viewport: { width: 1280, height: 800 },
     drawer: true, tab: TAB.settings,
     state: {
+      ...DEFAULTS,
       text: 'HYPE\nSIGN',
-      mode: 'static', marqueeSpeed: 400, rotation: 0, lang: 'en', margin: 6, fontWeight: 900,
-      textColor: { type: 'linear', angle: 135, stops: [
-        { id: 's1', color: '#fbbf24', position: 0 },
-        { id: 's2', color: '#f43f5e', position: 50 },
-        { id: 's3', color: '#8b5cf6', position: 100 },
-      ]},
+      lang: 'en',
+      fontWeight: 900,
+      margin: 6,
+      textColor: WARM_GRADIENT,
       bgColor: { type: 'solid', color: '#0f172a' },
-      presets: [], textPresets: [],
+      panelMode: 'split',
     },
   },
 ];
@@ -184,7 +284,6 @@ async function spawnDevServer() {
       reject(new Error(`vite exited early with code ${code}`));
     });
   });
-  // Vite logs "Local:" then is ready, but the SW + assets need a moment.
   await new Promise((r) => setTimeout(r, 800));
   return child;
 }
@@ -208,12 +307,11 @@ async function captureScene(browser, scene) {
     await page.setViewport(scene.viewport);
     await seedAndGoto(page, scene.state);
     if (scene.drawer) {
-      // Open drawer by triggering the settings toggle programmatically (the
-      // button itself isn't hidden yet at this point). Then hide it.
-      await page.evaluate(() => {
-        const btn = document.querySelector('button.settings-toggle');
-        if (btn) btn.click();
-      });
+      // The new UX: clicking anywhere on .display-root toggles the panel.
+      // No more gear button. The click bubbles up to the React onClick
+      // handler that calls togglePanel().
+      await page.click('.display-root');
+      // Wait for slide-in transition (280ms) plus a small buffer.
       await new Promise((r) => setTimeout(r, 450));
       if (typeof scene.tab === 'number') {
         await page.evaluate((idx) => {
@@ -222,13 +320,21 @@ async function captureScene(browser, scene) {
         }, scene.tab);
         await new Promise((r) => setTimeout(r, 250));
       }
+      if (scene.scrollPanel === 'bottom') {
+        await page.evaluate(() => {
+          const body = document.querySelector('.drawer-body');
+          if (body) body.scrollTop = body.scrollHeight;
+        });
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    } else {
+      // Non-drawer scenes: hide the drawer entirely so its closed-state
+      // shadow / border doesn't bleed into the canvas.
+      await page.addStyleTag({
+        content: '.drawer { display: none !important; }',
+      });
+      await new Promise((r) => setTimeout(r, 100));
     }
-    await page.addStyleTag({
-      content: scene.drawer
-        ? '.settings-toggle { display: none !important; }'
-        : '.settings-toggle, .drawer, .drawer-backdrop { display: none !important; }',
-    });
-    await new Promise((r) => setTimeout(r, 200));
     const out = path.join(OUT_DIR, scene.id + '.png');
     await page.screenshot({ path: out, type: 'png' });
     const sz = fs.statSync(out).size;
@@ -247,8 +353,7 @@ async function captureHero(browser) {
     await page.setViewport({ width: 1024, height: 512 });
     await seedAndGoto(page, HERO_STATE);
     await page.addStyleTag({
-      content:
-        '.settings-toggle, .drawer, .drawer-backdrop { display: none !important; }',
+      content: '.drawer { display: none !important; }',
     });
     await new Promise((r) => setTimeout(r, 600));
 
@@ -277,7 +382,7 @@ async function captureHero(browser) {
     if (captured === 0) throw new Error('no screencast frames captured');
     const captureFps = Math.max(1, Math.round((captured * 1000) / DURATION_MS));
     // Encode-time downsampling to keep GIF size sane: 60fps native screencast
-    // → 20fps GIF, 1024w → 800w. README needs smooth-enough motion, not
+    // → 15fps GIF, 1024w → 720w. README needs smooth-enough motion, not
     // pixel-perfect playback; under 2 MB is the goal.
     const outFps = 15;
     const outWidth = 720;
@@ -346,7 +451,6 @@ async function main() {
   } finally {
     await browser.close();
     dev.kill('SIGTERM');
-    // Give vite a moment to release the port before exiting.
     await new Promise((r) => setTimeout(r, 200));
   }
   console.log('done');
