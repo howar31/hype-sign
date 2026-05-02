@@ -152,7 +152,7 @@ Drawer with four tabs (in order):
 - **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), font-weight slider, text presets, clear-text button at end
 - **Tint** (`字色`) — text-color editor, save-current-color form, shared color preset list (apply hits text), reset-tint button at end
 - **Backdrop** (`底色`) — background-color editor, save-current-color form, shared color preset list (apply hits bg), reset-backdrop button at end
-- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, language toggle, build-version footer (commit hash + new-version-ready hint when the SW has activated a fresh bundle, GitHub repo link, sponsor link)
+- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, language toggle, build-version footer (commit hash + new-version-ready hint when the SW has activated a fresh bundle, brand icon row: GitHub / Ko-fi / PayPal)
 
 `ClearTextButton`, `ResetColorButton(tint)`, and `ResetColorButton(bg)` all live at the bottom of their respective tabs as identical-looking danger ConfirmButtons. The two color-reset buttons are independent: resetting tint clears textColor and re-derives the ColorEditor's solid/linear/radial snapshots via a `key` bump, but does not touch backdrop's snapshots, and vice versa.
 
@@ -329,7 +329,7 @@ There is no network feature in the app, but the app's *own* files (HTML / JS / C
 
 ### Version footer + passive update detection
 
-`vite.config.ts` resolves a `__COMMIT__` constant at build time (`git rev-parse --short HEAD`, with `GITHUB_SHA` taking precedence in CI, `-dirty` suffix when the working tree is non-empty, and `'dev'` when no git is reachable) and injects it via Vite `define`. The Settings tab renders it as a small `.muted` footer, followed by two more lines: a link to the GitHub repo (`https://github.com/howar31/hype-sign`) and a sponsor link (`https://donate.howar31.com`, labelled 「贊助」 / "Sponsor"). The Chinese label deliberately avoids 「捐款」 — see `~/.claude/skills/accept-donations` for why.
+`vite.config.ts` resolves a `__COMMIT__` constant at build time (`git rev-parse --short HEAD`, with `GITHUB_SHA` taking precedence in CI, `-dirty` suffix when the working tree is non-empty, and `'dev'` when no git is reachable) and injects it via Vite `define`. The Settings tab renders it as a small `.version-footer` block: one row showing `版本 <hash>` (with the new-version-ready note appended after a `·` separator when applicable), then a row of three 32×32 brand-icon links (`.icon-link[data-brand]`) — GitHub (`github.com/howar31/hype-sign`), Ko-fi (`ko-fi.com/howar31`), PayPal (`donate.howar31.com`). Default state is muted glass; `:hover` / `:focus-visible` swaps in the brand color (white / `#FF5E5B` / `#0070BA`) plus a tinted background. Brand SVG paths are defined inline at the top of `OtherSection.tsx`. Tooltip / aria-label is `<brand> · 贊助` / `<brand> · Sponsor` for the donation links — Chinese deliberately avoids 「捐款」 (see `~/.claude/skills/accept-donations`).
 
 `src/lib/swUpdate.ts` augments this with a **purely passive** new-version hint: `initSwUpdateWatcher()` (called from `main.tsx`) attaches a `controllerchange` listener to `navigator.serviceWorker`, and `useUpdateReady()` (used by `OtherSection`) returns the resulting flag via `useSyncExternalStore`. When `clientsClaim()` in the auto-updated SW takes over the page, the flag flips and the footer appends "新版已就緒，重開後生效" / "New version ready — reopen to apply" next to the commit hash.
 

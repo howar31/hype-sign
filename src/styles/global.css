@@ -878,3 +878,68 @@ input[type='range']::-moz-range-thumb {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   cursor: pointer;
 }
+
+/* Settings tab footer — version line + brand icon row.
+   Icons use brand-color hover states (GitHub white, Ko-fi #FF5E5B,
+   PayPal #0070BA) layered over the standard glass elev background. */
+.version-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.version-line {
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.version-links {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-link {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--glass-bg-elev);
+  border: 1px solid var(--glass-stroke);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+.icon-link:hover,
+.icon-link:focus-visible {
+  background: var(--glass-bg-elev-hover);
+  color: var(--text);
+  border-color: var(--glass-stroke-strong);
+}
+
+.icon-link[data-brand='github']:hover,
+.icon-link[data-brand='github']:focus-visible {
+  color: #ffffff;
+}
+
+.icon-link[data-brand='kofi']:hover,
+.icon-link[data-brand='kofi']:focus-visible {
+  color: #ff5e5b;
+  background: rgba(255, 94, 91, 0.12);
+  border-color: rgba(255, 94, 91, 0.5);
+}
+
+.icon-link[data-brand='paypal']:hover,
+.icon-link[data-brand='paypal']:focus-visible {
+  color: #0070ba;
+  background: rgba(0, 112, 186, 0.16);
+  border-color: rgba(0, 112, 186, 0.6);
+}
