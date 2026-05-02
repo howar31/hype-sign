@@ -1,9 +1,34 @@
+import { execSync } from 'node:child_process';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+function resolveCommit(): string {
+  // CI exposes the full SHA via GITHUB_SHA; prefer it so the deployed bundle
+  // reflects the commit being deployed, not whatever the runner happens to
+  // have checked out locally.
+  const ciSha = process.env.GITHUB_SHA?.slice(0, 7);
+  if (ciSha) return ciSha;
+  try {
+    const sha = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+    const dirty = execSync('git status --porcelain', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim().length > 0;
+    return dirty ? `${sha}-dirty` : sha;
+  } catch {
+    return 'dev';
+  }
+}
+
+const COMMIT = resolveCommit();
+
 export default defineConfig({
   base: '/hype-sign/',
+  define: {
+    __COMMIT__: JSON.stringify(COMMIT),
+  },
   plugins: [
     react(),
     VitePWA({

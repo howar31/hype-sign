@@ -28,6 +28,7 @@ src/
 │   ├── colorToCss.ts                     ColorValue → CSS background string
 │   ├── colorToSvg.tsx                    ColorValue → <linearGradient>/<radialGradient> defs
 │   ├── measureText.ts                    canvas-based text width measurement (ref font size)
+│   ├── swUpdate.ts                       passive controllerchange listener + useUpdateReady() hook
 │   └── i18n.ts                           ZH/EN dict + useT() hook
 ├── hooks/
 │   ├── useElementSize.ts                 ResizeObserver wrapper
@@ -43,7 +44,7 @@ src/
 │   │   │   ├── TextSection.tsx           TextInput + ModeToggle + SpeedSlider + TextPresetManager + ClearTextButton
 │   │   │   ├── TextColorSection.tsx      ColorEditor (text) + SaveCurrentColor + ColorPresetList(text) + ResetColorButton(tint)
 │   │   │   ├── BackgroundColorSection.tsx ColorEditor (bg) + SaveCurrentColor + ColorPresetList(bg) + ResetColorButton(bg)
-│   │   │   └── OtherSection.tsx          RotateButton + FullscreenButton + LanguageToggle
+│   │   │   └── OtherSection.tsx          RotateButton + FullscreenButton + MarginSlider + LanguageToggle + version footer
 │   │   ├── TextInput.tsx · ModeToggle.tsx · SpeedSlider.tsx · RotateButton.tsx
 │   │   ├── FullscreenButton.tsx · LanguageToggle.tsx · ClearTextButton.tsx · ResetColorButton.tsx
 │   │   ├── color/
@@ -151,7 +152,7 @@ Drawer with four tabs (in order):
 - **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), font-weight slider, text presets, clear-text button at end
 - **Tint** (`字色`) — text-color editor, save-current-color form, shared color preset list (apply hits text), reset-tint button at end
 - **Backdrop** (`底色`) — background-color editor, save-current-color form, shared color preset list (apply hits bg), reset-backdrop button at end
-- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, language toggle
+- **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, language toggle, build-version footer (commit hash + new-version-ready hint when the SW has activated a fresh bundle)
 
 `ClearTextButton`, `ResetColorButton(tint)`, and `ResetColorButton(bg)` all live at the bottom of their respective tabs as identical-looking danger ConfirmButtons. The two color-reset buttons are independent: resetting tint clears textColor and re-derives the ColorEditor's solid/linear/radial snapshots via a `key` bump, but does not touch backdrop's snapshots, and vice versa.
 
@@ -325,6 +326,14 @@ The smoke suite covers layout integrity, rotation centering (measures actual gly
 ## Why the service worker is non-optional
 
 There is no network feature in the app, but the app's *own* files (HTML / JS / CSS / icons) still need a server to deliver them. The service worker (configured in `vite.config.ts` via `vite-plugin-pwa`'s Workbox preset) precaches the entire app shell on first load so subsequent visits are zero-network — which is the entire point in venues with bad reception. `registerType: 'autoUpdate'` means new SW versions activate at next launch, no user prompt.
+
+### Version footer + passive update detection
+
+`vite.config.ts` resolves a `__COMMIT__` constant at build time (`git rev-parse --short HEAD`, with `GITHUB_SHA` taking precedence in CI, `-dirty` suffix when the working tree is non-empty, and `'dev'` when no git is reachable) and injects it via Vite `define`. The Settings tab renders it as a small `.muted` footer.
+
+`src/lib/swUpdate.ts` augments this with a **purely passive** new-version hint: `initSwUpdateWatcher()` (called from `main.tsx`) attaches a `controllerchange` listener to `navigator.serviceWorker`, and `useUpdateReady()` (used by `OtherSection`) returns the resulting flag via `useSyncExternalStore`. When `clientsClaim()` in the auto-updated SW takes over the page, the flag flips and the footer appends "新版已就緒，重開後生效" / "New version ready — reopen to apply" next to the commit hash.
+
+The watcher does not call `register()`, `update()`, `skipWaiting()`, or any other SW API — it only observes. **First-install guard:** when `navigator.serviceWorker.controller === null` at boot, the listener is never attached, so the initial takeover that ships the very first SW does not get mis-reported as an update. The plugin's auto-injected `registerSW.js` and the generated `sw.js` (`skipWaiting` + `clientsClaim` + `cleanupOutdatedCaches`) are unchanged; do not call SW lifecycle APIs from app code.
 
 ## Deploy
 

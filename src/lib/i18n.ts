@@ -89,6 +89,9 @@ const ZH: Dict = {
   'clear.label': '清除文字',
   'clear.button': '清空目前文字',
   'clear.confirm': '再點一次確認清除',
+
+  'version.label': '版本',
+  'version.updateReady': '新版已就緒，重開後生效',
 };
 
 const EN: Dict = {
@@ -177,6 +180,9 @@ const EN: Dict = {
   'clear.label': 'Clear text',
   'clear.button': 'Clear current text',
   'clear.confirm': 'Tap again to confirm',
+
+  'version.label': 'Version',
+  'version.updateReady': 'New version ready — reopen to apply',
 };
 
 const DICTS: Record<Lang, Dict> = {
