@@ -55,7 +55,7 @@ src/
 │   │   └── presets/
 │   │       ├── SaveCurrentColor.tsx      save current color in active editor as a single-color preset
 │   │       ├── ColorPresetList.tsx       shared preset list; applyTo prop chooses tint vs backdrop
-│   │       ├── PresetItem.tsx            swatch + ColorTypeIcon + name + apply/delete
+│   │       ├── PresetItem.tsx            swatch + ColorTypeIcon + name; dual-mode (apply / edit with ▲▼ + delete)
 │   │       ├── ColorTypeIcon.tsx         14×14 type glyph (solid / linear / radial) with hover+tap tooltip
 │   │       ├── TextPresetManager.tsx     text-content preset
 │   │       └── TextPresetItem.tsx
@@ -93,9 +93,9 @@ type Preset     = { id; name; color: ColorValue }; // single-color preset (was {
 type TextPreset = { id; name; text };              // text-content preset
 ```
 
-Persisted under `hype-sign:v1` / version 2. v1 → v2 migration in `settingsStore.ts` splits each old `{textColor, bgColor}` preset into two single-color presets named `…(字)` and `…(底)` so user data isn't lost.
+Persisted under `hype-sign:v1` / version 3. v1 → v2 migration splits old `{textColor, bgColor}` preset pairs into two single-color presets; v2 → v3 seeds panel-mode defaults.
 
-`DEFAULT_SETTINGS` ships text=`'Hype Sign\nSettings ↗'` (second line points first-time users to the floating settings button at the top-right), white-on-black, static mode, 400 px/s, no rotation, zh-TW, `margin=0`, `fontWeight=800`.
+`DEFAULT_SETTINGS` ships text=`'Hype Sign\nClick for Settings\n按一下開啟設定'`, white-on-black, static mode, 400 px/s, no rotation, zh-TW, `margin=0`, `fontWeight=800`.
 
 ## Store (`src/store/settingsStore.ts`)
 
@@ -112,9 +112,11 @@ Single zustand store, all actions live here; components only `useSettings(s => s
 | `savePreset(name, color)` | Append a single-color `Preset` from the explicit `color` argument (the active editor passes its current `textColor` or `bgColor`) |
 | `applyPresetToText(id)` / `applyPresetToBg(id)` | Restore the chosen preset onto either side. The preset itself is type-agnostic; the apply target is decided by which color tab the user is in |
 | `deletePreset(id)`, `renamePreset(id, name)` | Standard |
+| `reorderPresets(id, direction)` | Swap the preset at `id` with its neighbor (`'up'` or `'down'`). No-op at boundaries. Array position = persisted order |
 | `saveTextPreset(name)` | Snapshot current `text` as a `TextPreset` (no-op if text is blank) |
 | `applyTextPreset(id)` | Restore `text` only |
 | `deleteTextPreset(id)` | Standard |
+| `reorderTextPresets(id, direction)` | Same as `reorderPresets` but for text presets |
 
 `partialize` lists every persisted field explicitly — when you add a setting that should survive reload, add it there.
 
@@ -155,6 +157,8 @@ Drawer with four tabs (in order):
 
 The shared `ColorPresetList` is rendered in both color tabs but takes an `applyTo: 'text' | 'bg'` prop so the apply button knows which side to write to. The preset itself is just `{ name, color }` — there is no "preset is for text" vs "preset is for bg" distinction in storage.
 
+Both `ColorPresetList` and `TextPresetManager` support an Edit mode (local `useState`, not persisted). Default view shows only the Apply button per row. Clicking "Edit" / 「編輯」 at the section header switches to edit layout: ▲ ▼ move buttons on the left + ✕ delete button on the right, Apply hidden. The Edit button only appears when at least one preset exists; when the last preset is deleted in edit mode, `isEditing` auto-resets via a `useEffect`. CSS: `.preset-row` uses `1fr auto` (normal) vs `.preset-row--editing` with `auto auto 1fr auto` (edit). Move buttons are plain `<button>` (instantly reversible); delete is still a `ConfirmButton variant="danger"`.
+
 `ColorTypeIcon` (next to each preset's swatch) renders a tiny 14×14 glyph for solid / linear / radial. Tooltip: native `:hover` for desktop, plus a React-state-driven tap tooltip that auto-dismisses after ~2s for touch devices.
 
 Tab state is local (`useState`) — not persisted across sessions; defaults to `text`.
@@ -177,8 +181,8 @@ The panel itself is rendered in either mode regardless — `.drawer.drawer--spli
 Reusable double-tap-to-confirm pattern (`src/components/ui/ConfirmButton.tsx`). First click arms the button (label switches to a confirmation phrase), second click within `timeoutMs` (default 3000) fires `onConfirm`.
 
 Two visual variants via `variant` prop (default `'danger'`):
-- `'danger'` — red border / red armed state. Used for destructive actions: reset colors (`ResetButton`), clear text (`ClearTextButton`), preset delete.
-- `'neutral'` — plain glass border / **blue** armed state. Used for non-destructive but state-replacing actions: applying a color or text preset (`PresetItem` / `TextPresetItem`).
+- `'danger'` — red border / red armed state. Used for destructive actions: reset colors (`ResetButton`), clear text (`ClearTextButton`), preset delete (only visible in edit mode).
+- `'neutral'` — plain glass border / **blue** armed state. Used for non-destructive but state-replacing actions: applying a color or text preset (only visible in normal mode).
 
 CSS specificity: `.btn.danger.armed` outranks `.btn.armed`, so danger buttons keep the red armed look even though both classes match.
 
@@ -196,7 +200,7 @@ Cross-device, the rendered font is whatever the device has (SF Pro on Apple, Seg
 
 Single file, two flat dicts (ZH-TW + EN). `useT()` returns `(key) => string`. Missing keys fall through to the key itself (visible during dev). Translation source is `lang` field from store. Add new strings to **both** dicts.
 
-**Terminology note:** in zh-TW, user-saved snapshots are translated as 「樣板」 (template), not 「預設」 (which collides with the standard term for "default"). English keeps "preset". Affected keys: `colorPreset.section`, `textPreset.section`, `preset.namePlaceholder`, `preset.empty`.
+**Terminology note:** in zh-TW, user-saved snapshots are translated as 「樣板」 (template), not 「預設」 (which collides with the standard term for "default"). English keeps "preset". Affected keys: `colorPreset.section`, `textPreset.section`, `textPreset.list`, `preset.namePlaceholder`, `preset.empty`, `preset.edit`, `preset.done`, `preset.moveUp`, `preset.moveDown`.
 
 ## PWA
 
@@ -324,7 +328,7 @@ There is no network feature in the app, but the app's *own* files (HTML / JS / C
 
 ## Deploy
 
-`.github/workflows/deploy.yml` runs on push to `main`:
+`.github/workflows/deploy.yml` runs on push to `main` (skips docs-only pushes via `paths-ignore: **.md, docs/**, LICENSE, .claude/**`):
 1. Checkout, setup Node 22, `npm ci`
 2. `npm run typecheck` then `npm run build`
 3. `actions/configure-pages` → `actions/upload-pages-artifact ./dist` → `actions/deploy-pages`

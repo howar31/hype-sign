@@ -18,10 +18,10 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 ## Features
 
 - **Static mode** — multi-line text auto-fits to fill the viewport.
-- **Marquee mode** — single-line horizontal scroll at 100–2000 px/s.
+- **Marquee mode** — single-line horizontal scroll at 100–2000 px/s. Multi-line text is merged into a single line automatically.
 - **Color** — solid, linear gradient, or radial gradient on text and background, with unlimited color stops.
-- **Color presets** — save single-color snapshots and apply them to either text or background.
-- **Text presets** — save text-only snippets independently of styling.
+- **Color presets** — save single-color snapshots and apply them to either text or background. Edit mode for reorder and delete.
+- **Text presets** — save text-only snippets independently of styling. Edit mode for reorder and delete.
 - **Rotation** — 0° / 90° / 180° / 270°, in-app.
 - **Fullscreen + Wake Lock** — keeps the screen on while foregrounded.
 - **Bilingual UI** — Traditional Chinese (zh-TW) and English.
@@ -34,6 +34,7 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 - **Edge margin slider** — 0–25% of the viewport's short side; background fills edge-to-edge regardless.
 - **iOS-safe layout** — text respects the iPhone notch and home indicator; background extends to the physical edges; rotation fits the safe canvas exactly.
 - **Font weight slider** — 100 to 900 in steps of 100.
+- **System font** — uses the platform's default system typeface for maximum compatibility across devices.
 
 ## Screenshots
 
@@ -43,9 +44,9 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 |---|---|---|
 | ![](docs/screenshots/panel-text.png) | ![](docs/screenshots/panel-tint.png) | ![](docs/screenshots/panel-floating.png) |
 
-| Color preset library | Rotation + Settings tab | Cheer board (panel dismissed) |
+| Color preset library | Edit mode — reorder + delete | Rotation + Settings tab |
 |---|---|---|
-| ![](docs/screenshots/panel-presets.png) | ![](docs/screenshots/panel-rotated.png) | ![](docs/screenshots/cheer-board.png) |
+| ![](docs/screenshots/panel-presets.png) | ![](docs/screenshots/panel-edit-mode.png) | ![](docs/screenshots/panel-rotated.png) |
 
 ### Mobile
 
@@ -66,8 +67,8 @@ The drawer has four tabs:
 | Tab | Contents |
 |---|---|
 | Text | text input · static / marquee mode · marquee speed · font weight · text presets · clear text |
-| Tint | text-color editor · save current color · shared color presets (apply to text) · reset tint |
-| Backdrop | background-color editor · save current color · shared color presets (apply to background) · reset backdrop |
+| Tint | text-color editor · save current color · shared color presets (apply to text, edit mode for reorder + delete) · reset tint |
+| Backdrop | background-color editor · save current color · shared color presets (apply to background, edit mode for reorder + delete) · reset backdrop |
 | Settings | rotate · fullscreen · edge margin · language |
 
 A tap on the design canvas opens or closes the panel. The panel overlays the canvas; closing it reveals the unobstructed design.
@@ -77,7 +78,7 @@ Two layout modes (desktop only, toggle in the panel header):
 - **Split** (default) — panel docks to the right on desktop, to the bottom on mobile. The mobile bottom sheet has a top resize handle.
 - **Floating** — panel becomes a draggable window with a bottom resize handle. Position and height persist.
 
-Color presets store one `ColorValue` (solid / linear / radial); the apply step routes it to either the text or the background. Both color tabs share the same preset list.
+Color presets store one `ColorValue` (solid / linear / radial); the apply step routes it to either the text or the background. Both color tabs share the same preset list. An Edit mode toggle reveals reorder (move up / move down) and delete controls while hiding Apply, keeping the default view clean.
 
 Resetting tint clears the text color across all three types (solid, linear, radial) and leaves the background untouched; resetting backdrop is the inverse.
 

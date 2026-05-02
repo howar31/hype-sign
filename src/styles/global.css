@@ -695,6 +695,12 @@ input[type='range'] {
 /* ---------------------------------------------------------------------------
  * Preset rows
  * ------------------------------------------------------------------------ */
+.preset-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .preset-list {
   display: flex;
   flex-direction: column;
@@ -703,7 +709,7 @@ input[type='range'] {
 
 .preset-row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto;
   gap: 8px;
   align-items: center;
   padding: 8px 10px;
@@ -711,6 +717,10 @@ input[type='range'] {
   border: 1px solid var(--glass-stroke);
   border-radius: var(--radius-md);
   transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.preset-row--editing {
+  grid-template-columns: auto auto 1fr auto;
 }
 
 .preset-row:hover {

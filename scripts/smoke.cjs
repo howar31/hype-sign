@@ -442,7 +442,182 @@ test('color: stop bar is linear-gradient(to right) for radial parent', async (br
 });
 
 // ---------------------------------------------------------------------------
-// G. persistence + migrations
+// G. preset edit mode
+// ---------------------------------------------------------------------------
+test('preset: edit toggle shows reorder + delete, hides apply', async (browser) => {
+  const page = await newPage(browser, DESKTOP);
+  await setState(page, {
+    presets: [
+      { id: 'a', name: 'Alpha', color: { type: 'solid', color: '#ff0000' } },
+      { id: 'b', name: 'Beta', color: { type: 'solid', color: '#00ff00' } },
+    ],
+  });
+  await reloadAndWait(page);
+  await clickCanvas(page);
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  await new Promise((r) => setTimeout(r, 250));
+  await page.evaluate(() => {
+    const body = document.querySelector('.drawer-body');
+    if (body) body.scrollTop = body.scrollHeight;
+  });
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Normal mode: apply buttons visible, no editing class
+  const normalApply = await page.evaluate(() =>
+    document.querySelectorAll('.preset-row .btn:not(.danger):not(.icon)').length);
+  truthy(normalApply >= 2, 'normal mode has apply buttons');
+  eq(await page.evaluate(() => document.querySelectorAll('.preset-row--editing').length), 0,
+    'no editing rows before toggle');
+
+  // Click Edit
+  await page.evaluate(() => document.querySelector('.preset-section-header button').click());
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Edit mode: editing class, move buttons, no apply
+  const editRows = await page.evaluate(() => document.querySelectorAll('.preset-row--editing').length);
+  truthy(editRows >= 2, 'edit rows present');
+  const moveButtons = await page.evaluate(() =>
+    document.querySelectorAll('.preset-row--editing .btn.icon:not(.danger)').length);
+  truthy(moveButtons >= 4, 'move buttons present (2 rows × 2)');
+  const editApply = await page.evaluate(() =>
+    document.querySelectorAll('.preset-row--editing .btn:not(.danger):not(.icon)').length);
+  eq(editApply, 0, 'no apply buttons in edit mode');
+
+  // Click Done — returns to normal
+  await page.evaluate(() => document.querySelector('.preset-section-header button').click());
+  await new Promise((r) => setTimeout(r, 200));
+  eq(await page.evaluate(() => document.querySelectorAll('.preset-row--editing').length), 0,
+    'editing rows gone after Done');
+  truthy(await page.evaluate(() =>
+    document.querySelectorAll('.preset-row .btn:not(.danger):not(.icon)').length) >= 2,
+    'apply buttons restored');
+  await page.close();
+});
+
+test('preset: reorder moves item and persists', async (browser) => {
+  const page = await newPage(browser, DESKTOP);
+  await setState(page, {
+    presets: [
+      { id: 'a', name: 'Alpha', color: { type: 'solid', color: '#ff0000' } },
+      { id: 'b', name: 'Beta', color: { type: 'solid', color: '#00ff00' } },
+    ],
+  });
+  await reloadAndWait(page);
+  await clickCanvas(page);
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  await new Promise((r) => setTimeout(r, 250));
+  await page.evaluate(() => {
+    const body = document.querySelector('.drawer-body');
+    if (body) body.scrollTop = body.scrollHeight;
+  });
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Enter edit mode
+  await page.evaluate(() => document.querySelector('.preset-section-header button').click());
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Click ▼ on first row (second .btn.icon:not(.danger) in first editing row)
+  await page.evaluate(() => {
+    const row = document.querySelector('.preset-row--editing');
+    const down = row.querySelectorAll('.btn.icon:not(.danger)')[1];
+    if (down) down.click();
+  });
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Verify DOM order
+  const names = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('.preset-name-text')).map((el) => el.textContent));
+  eq(names[0], 'Beta', 'Beta moved to first after reorder');
+  eq(names[1], 'Alpha', 'Alpha moved to second');
+
+  // Verify persisted
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('hype-sign:v1')).state.presets);
+  eq(stored[0].name, 'Beta', 'reorder persisted');
+  await page.close();
+});
+
+test('preset: delete in edit mode removes item', async (browser) => {
+  const page = await newPage(browser, DESKTOP);
+  await setState(page, {
+    presets: [
+      { id: 'a', name: 'Alpha', color: { type: 'solid', color: '#ff0000' } },
+      { id: 'b', name: 'Beta', color: { type: 'solid', color: '#00ff00' } },
+    ],
+  });
+  await reloadAndWait(page);
+  await clickCanvas(page);
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  await new Promise((r) => setTimeout(r, 250));
+  await page.evaluate(() => {
+    const body = document.querySelector('.drawer-body');
+    if (body) body.scrollTop = body.scrollHeight;
+  });
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Enter edit mode
+  await page.evaluate(() => document.querySelector('.preset-section-header button').click());
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Double-click delete on first row (ConfirmButton: arm then confirm)
+  await page.evaluate(() => {
+    const rows = document.querySelectorAll('.preset-row--editing');
+    rows[0].querySelector('.btn.danger').click();
+  });
+  await new Promise((r) => setTimeout(r, 200));
+  await page.evaluate(() => {
+    const rows = document.querySelectorAll('.preset-row--editing');
+    rows[0].querySelector('.btn.danger.armed').click();
+  });
+  await new Promise((r) => setTimeout(r, 300));
+
+  // Only count rows in edit mode (both Tint and Backdrop tabs render
+  // ColorPresetList — the hidden backdrop tab's rows are not --editing).
+  eq(await page.evaluate(() => document.querySelectorAll('.preset-row--editing').length), 1,
+    'one editing row remaining');
+  const stored = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('hype-sign:v1')).state.presets);
+  eq(stored.length, 1, 'delete persisted');
+  eq(stored[0].name, 'Beta', 'remaining preset is Beta');
+  await page.close();
+});
+
+test('preset: edit mode auto-exits when last preset deleted', async (browser) => {
+  const page = await newPage(browser, DESKTOP);
+  await setState(page, {
+    presets: [
+      { id: 'a', name: 'Only', color: { type: 'solid', color: '#ff0000' } },
+    ],
+  });
+  await reloadAndWait(page);
+  await clickCanvas(page);
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  await new Promise((r) => setTimeout(r, 250));
+  await page.evaluate(() => {
+    const body = document.querySelector('.drawer-body');
+    if (body) body.scrollTop = body.scrollHeight;
+  });
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Enter edit mode
+  await page.evaluate(() => document.querySelector('.preset-section-header button').click());
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Delete the only preset
+  const del = '.preset-row--editing .btn.danger.icon';
+  await page.evaluate((s) => document.querySelector(s).click(), del);
+  await new Promise((r) => setTimeout(r, 100));
+  await page.evaluate((s) => document.querySelector(s).click(), del);
+  await new Promise((r) => setTimeout(r, 200));
+
+  // Edit button should be gone, empty message shown
+  const editBtn = await page.evaluate(() => document.querySelector('.preset-section-header button'));
+  eq(editBtn, null, 'edit button hidden when no presets');
+  await page.close();
+});
+
+// ---------------------------------------------------------------------------
+// H. persistence + migrations
 // ---------------------------------------------------------------------------
 test('persist: settings survive reload', async (browser) => {
   const page = await newPage(browser, DESKTOP);

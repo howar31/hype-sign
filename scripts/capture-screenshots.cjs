@@ -80,17 +80,14 @@ const PRESETS_DEMO = [
   { id: 'p6', name: 'Lime', color: { type: 'solid', color: '#84cc16' }},
 ];
 
-const WARM_GRADIENT = {
-  type: 'linear', angle: 135,
-  stops: [
-    { id: 's1', color: '#fbbf24', position: 0 },
-    { id: 's2', color: '#f43f5e', position: 50 },
-    { id: 's3', color: '#8b5cf6', position: 100 },
-  ],
-};
+// Each scene uses a unique text + background color combination.
+// Across 10 scenes: text types (solid ×3, linear ×4, radial ×3),
+// bg types (solid ×3, linear ×3, radial ×4). No two scenes share
+// the same combo.
 
 const SCENES = [
-  // 1. Split + Text tab — multi-line auto-fit + font weight + text editing UX.
+  // 1. Split + Text tab — multi-line auto-fit + font weight.
+  //    text: linear warm gold→rose→violet  |  bg: radial dark navy→black
   {
     id: 'panel-text',
     viewport: { width: 1280, height: 800 },
@@ -100,12 +97,26 @@ const SCENES = [
       text: 'HYPE\nSIGN',
       fontWeight: 900,
       margin: 6,
-      textColor: WARM_GRADIENT,
-      bgColor: { type: 'solid', color: '#0f172a' },
+      textColor: {
+        type: 'linear', angle: 135,
+        stops: [
+          { id: 's1', color: '#fbbf24', position: 0 },
+          { id: 's2', color: '#f43f5e', position: 50 },
+          { id: 's3', color: '#8b5cf6', position: 100 },
+        ],
+      },
+      bgColor: {
+        type: 'radial', cx: 50, cy: 45,
+        stops: [
+          { id: 's1', color: '#1e293b', position: 0 },
+          { id: 's2', color: '#020617', position: 100 },
+        ],
+      },
       panelMode: 'split',
     },
   },
   // 2. Split + Tint tab — gradient editor (stops bar + sliders).
+  //    text: radial neon pink→magenta→deep-purple  |  bg: solid dark emerald
   {
     id: 'panel-tint',
     viewport: { width: 1280, height: 800 },
@@ -114,12 +125,20 @@ const SCENES = [
       ...DEFAULTS,
       text: 'HYPE',
       fontWeight: 900,
-      textColor: WARM_GRADIENT,
-      bgColor: { type: 'solid', color: '#0f172a' },
+      textColor: {
+        type: 'radial', cx: 50, cy: 50,
+        stops: [
+          { id: 's1', color: '#ff3ea5', position: 0 },
+          { id: 's2', color: '#d946ef', position: 50 },
+          { id: 's3', color: '#6d28d9', position: 100 },
+        ],
+      },
+      bgColor: { type: 'solid', color: '#0d1f17' },
       panelMode: 'split',
     },
   },
-  // 3. Floating + Backdrop tab — draggable window with shadow + bottom resize handle.
+  // 3. Floating + Backdrop tab — draggable window with shadow.
+  //    text: solid white  |  bg: linear sky→navy
   {
     id: 'panel-floating',
     viewport: { width: 1280, height: 800 },
@@ -143,6 +162,7 @@ const SCENES = [
     },
   },
   // 4. Split + Tint tab + 6 saved presets — preset library.
+  //    text: solid orange  |  bg: linear dark-plum→dark-navy
   {
     id: 'panel-presets',
     viewport: { width: 1280, height: 800 },
@@ -152,12 +172,19 @@ const SCENES = [
       text: 'HYPE',
       fontWeight: 900,
       textColor: { type: 'solid', color: '#fb923c' },
-      bgColor: { type: 'solid', color: '#0f172a' },
+      bgColor: {
+        type: 'linear', angle: 160,
+        stops: [
+          { id: 's1', color: '#2e1065', position: 0 },
+          { id: 's2', color: '#0c1631', position: 100 },
+        ],
+      },
       presets: PRESETS_DEMO,
       panelMode: 'split',
     },
   },
   // 5. Split + Settings tab + rotated 90°.
+  //    text: linear cyan→electric-blue  |  bg: solid dark charcoal
   {
     id: 'panel-rotated',
     viewport: { width: 1280, height: 800 },
@@ -169,25 +196,47 @@ const SCENES = [
       rotation: 90,
       fontWeight: 900,
       margin: 6,
-      textColor: WARM_GRADIENT,
-      bgColor: { type: 'solid', color: '#0f172a' },
+      textColor: {
+        type: 'linear', angle: 90,
+        stops: [
+          { id: 's1', color: '#22d3ee', position: 0 },
+          { id: 's2', color: '#3b82f6', position: 100 },
+        ],
+      },
+      bgColor: { type: 'solid', color: '#12121a' },
       panelMode: 'split',
     },
   },
-  // 6. NO panel — solid yellow / black "加油!" cheer board.
+  // 6. Split + Tint tab + edit mode — reorder / delete controls.
+  //    text: linear lime→emerald  |  bg: radial warm dark vignette
   {
-    id: 'cheer-board',
+    id: 'panel-edit-mode',
     viewport: { width: 1280, height: 800 },
+    drawer: true, tab: TAB.tint, scrollPanel: 'bottom', editMode: true,
     state: {
       ...DEFAULTS,
-      text: '加油!',
+      text: 'HYPE',
       fontWeight: 900,
-      margin: 6,
-      textColor: { type: 'solid', color: '#0a0a0a' },
-      bgColor: { type: 'solid', color: '#fde047' },
+      textColor: {
+        type: 'linear', angle: 0,
+        stops: [
+          { id: 's1', color: '#84cc16', position: 0 },
+          { id: 's2', color: '#059669', position: 100 },
+        ],
+      },
+      bgColor: {
+        type: 'radial', cx: 50, cy: 50,
+        stops: [
+          { id: 's1', color: '#1c1210', position: 0 },
+          { id: 's2', color: '#0a0806', position: 100 },
+        ],
+      },
+      presets: PRESETS_DEMO,
+      panelMode: 'split',
     },
   },
-  // 7. Mobile bottom sheet — Text tab, top resize handle visible.
+  // 7. Mobile bottom sheet (tall) — Text tab, resize handle visible.
+  //    text: solid white  |  bg: radial red→dark-crimson
   {
     id: 'mobile-text',
     viewport: { width: 390, height: 844, deviceScaleFactor: 2 },
@@ -201,33 +250,48 @@ const SCENES = [
       margin: 6,
       textColor: { type: 'solid', color: '#ffffff' },
       bgColor: {
-        type: 'linear', angle: 180,
+        type: 'radial', cx: 50, cy: 40,
         stops: [
           { id: 's1', color: '#dc2626', position: 0 },
-          { id: 's2', color: '#7c2d12', position: 100 },
+          { id: 's2', color: '#450a0a', position: 100 },
         ],
       },
       panelMode: 'split',
-      mobilePanelHeight: 500,
+      mobilePanelHeight: 340,
     },
   },
-  // 8. Mobile bottom sheet — Tint tab gradient editor.
+  // 8. Mobile bottom sheet (tall) — Tint tab gradient editor.
+  //    text: radial gold→amber→orange  |  bg: linear dark-teal→dark-navy
   {
     id: 'mobile-tint',
     viewport: { width: 390, height: 844, deviceScaleFactor: 2 },
-    drawer: true, tab: TAB.tint,
+    drawer: true, tab: TAB.tint, scrollPanel: 200,
     state: {
       ...DEFAULTS,
       text: 'HYPE',
       fontWeight: 900,
       margin: 6,
-      textColor: WARM_GRADIENT,
-      bgColor: { type: 'solid', color: '#0f172a' },
+      textColor: {
+        type: 'radial', cx: 50, cy: 50,
+        stops: [
+          { id: 's1', color: '#fbbf24', position: 0 },
+          { id: 's2', color: '#f59e0b', position: 50 },
+          { id: 's3', color: '#ea580c', position: 100 },
+        ],
+      },
+      bgColor: {
+        type: 'linear', angle: 135,
+        stops: [
+          { id: 's1', color: '#0f3d3e', position: 0 },
+          { id: 's2', color: '#0c1631', position: 100 },
+        ],
+      },
       panelMode: 'split',
-      mobilePanelHeight: 500,
+      mobilePanelHeight: 560,
     },
   },
   // 9a. Settings tab in zh-TW.
+  //    text: radial rose→coral  |  bg: solid midnight
   {
     id: 'drawer-zh',
     viewport: { width: 1280, height: 800 },
@@ -238,12 +302,19 @@ const SCENES = [
       lang: 'zh-TW',
       fontWeight: 900,
       margin: 6,
-      textColor: WARM_GRADIENT,
-      bgColor: { type: 'solid', color: '#0f172a' },
+      textColor: {
+        type: 'radial', cx: 50, cy: 50,
+        stops: [
+          { id: 's1', color: '#fda4af', position: 0 },
+          { id: 's2', color: '#e11d48', position: 100 },
+        ],
+      },
+      bgColor: { type: 'solid', color: '#0c0a14' },
       panelMode: 'split',
     },
   },
   // 9b. Settings tab in English.
+  //    text: solid amber  |  bg: radial dark-indigo→near-black
   {
     id: 'drawer-en',
     viewport: { width: 1280, height: 800 },
@@ -254,8 +325,14 @@ const SCENES = [
       lang: 'en',
       fontWeight: 900,
       margin: 6,
-      textColor: WARM_GRADIENT,
-      bgColor: { type: 'solid', color: '#0f172a' },
+      textColor: { type: 'solid', color: '#fbbf24' },
+      bgColor: {
+        type: 'radial', cx: 50, cy: 45,
+        stops: [
+          { id: 's1', color: '#312e81', position: 0 },
+          { id: 's2', color: '#070712', position: 100 },
+        ],
+      },
       panelMode: 'split',
     },
   },
@@ -320,12 +397,20 @@ async function captureScene(browser, scene) {
         }, scene.tab);
         await new Promise((r) => setTimeout(r, 250));
       }
-      if (scene.scrollPanel === 'bottom') {
-        await page.evaluate(() => {
+      if (scene.scrollPanel) {
+        await page.evaluate((target) => {
           const body = document.querySelector('.drawer-body');
-          if (body) body.scrollTop = body.scrollHeight;
-        });
+          if (!body) return;
+          body.scrollTop = target === 'bottom' ? body.scrollHeight : target;
+        }, scene.scrollPanel);
         await new Promise((r) => setTimeout(r, 200));
+      }
+      if (scene.editMode) {
+        await page.evaluate(() => {
+          const btn = document.querySelector('.preset-section-header button');
+          if (btn) btn.click();
+        });
+        await new Promise((r) => setTimeout(r, 250));
       }
     } else {
       // Non-drawer scenes: hide the drawer entirely so its closed-state

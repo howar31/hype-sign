@@ -68,6 +68,8 @@ type Actions = {
   saveTextPreset: (name: string) => void;
   applyTextPreset: (id: string) => void;
   deleteTextPreset: (id: string) => void;
+  reorderPresets: (id: string, direction: 'up' | 'down') => void;
+  reorderTextPresets: (id: string, direction: 'up' | 'down') => void;
   setPanelMode: (mode: PanelMode) => void;
   togglePanel: () => void;
   closePanel: () => void;
@@ -159,6 +161,25 @@ export const useSettings = create<State & Actions>()(
       },
       deleteTextPreset: (id) => {
         set({ textPresets: get().textPresets.filter((x) => x.id !== id) });
+      },
+
+      reorderPresets: (id, direction) => {
+        const arr = [...get().presets];
+        const idx = arr.findIndex((x) => x.id === id);
+        if (idx < 0) return;
+        const swap = direction === 'up' ? idx - 1 : idx + 1;
+        if (swap < 0 || swap >= arr.length) return;
+        [arr[idx], arr[swap]] = [arr[swap], arr[idx]];
+        set({ presets: arr });
+      },
+      reorderTextPresets: (id, direction) => {
+        const arr = [...get().textPresets];
+        const idx = arr.findIndex((x) => x.id === id);
+        if (idx < 0) return;
+        const swap = direction === 'up' ? idx - 1 : idx + 1;
+        if (swap < 0 || swap >= arr.length) return;
+        [arr[idx], arr[swap]] = [arr[swap], arr[idx]];
+        set({ textPresets: arr });
       },
 
       setPanelMode: (mode) => set({ panelMode: mode }),

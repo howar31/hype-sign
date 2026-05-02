@@ -66,7 +66,8 @@ const ZH: Dict = {
 
   'colorPreset.section': '顏色樣板',
   'colorPreset.list': '已儲存的顏色樣板',
-  'textPreset.section': '文字樣板',
+  'textPreset.section': '儲存目前文字',
+  'textPreset.list': '已儲存的文字樣板',
   'preset.empty': '尚未儲存任何樣板',
   'preset.namePlaceholder': '樣板名稱（可留白）',
   'preset.save': '儲存',
@@ -74,6 +75,10 @@ const ZH: Dict = {
   'preset.applyConfirm': '再點一次確認套用',
   'preset.delete': '刪除',
   'preset.deleteConfirm': '再點一次確認',
+  'preset.edit': '編輯',
+  'preset.done': '完成',
+  'preset.moveUp': '上移',
+  'preset.moveDown': '下移',
 
   'reset.tint.label': '重置字色',
   'reset.tint.button': '重置字色全部設定（純色 / 線性 / 圓形）',
@@ -149,7 +154,8 @@ const EN: Dict = {
 
   'colorPreset.section': 'Color presets',
   'colorPreset.list': 'Saved color presets',
-  'textPreset.section': 'Text presets',
+  'textPreset.section': 'Save current text',
+  'textPreset.list': 'Saved text presets',
   'preset.empty': 'Nothing saved yet',
   'preset.namePlaceholder': 'Name (optional)',
   'preset.save': 'Save',
@@ -157,6 +163,10 @@ const EN: Dict = {
   'preset.applyConfirm': 'Tap again to apply',
   'preset.delete': 'Delete',
   'preset.deleteConfirm': 'Tap again to confirm',
+  'preset.edit': 'Edit',
+  'preset.done': 'Done',
+  'preset.moveUp': 'Move up',
+  'preset.moveDown': 'Move down',
 
   'reset.tint.label': 'Reset tint',
   'reset.tint.button': 'Reset all tint settings (solid / linear / radial)',
