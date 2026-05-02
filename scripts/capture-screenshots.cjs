@@ -44,7 +44,11 @@ const HERO_STATE = {
   ...DEFAULTS,
   text: 'ENCORE!! 再來一首',
   mode: 'marquee',
-  marqueeSpeed: 380,
+  // 600 px/s is a comfortable read-along speed for the gif (1000 felt
+  // rushed). The marquee scaledWidth at viewport=1024×512 is ~5000 px,
+  // so loop time = (1024 + 5000) / 600 ≈ 10 s; DURATION_MS covers it
+  // with ~1 s of tail buffer.
+  marqueeSpeed: 600,
   margin: 4,
   fontWeight: 900,
   textColor: {
@@ -81,13 +85,13 @@ const PRESETS_DEMO = [
   { id: 'p6', name: 'Lime', color: { type: 'solid', color: '#84cc16' }},
 ];
 
-// Each scene uses a unique text + background color combination.
-// Across 10 scenes: text types (solid ×3, linear ×4, radial ×3),
-// bg types (solid ×3, linear ×3, radial ×4). No two scenes share
-// the same combo.
+// Each scene uses a unique text + background colour combination, and
+// most non-`panel-text` scenes pick a non-default font so the README
+// gallery shows off the curated typeface variety.
 
 const SCENES = [
-  // 1. Split + Text tab — multi-line auto-fit + font weight.
+  // 1. Split + Text tab — text input, mode toggle, text-preset list.
+  //    Default Noto Sans TC.
   //    text: linear warm gold→rose→violet  |  bg: radial dark navy→black
   {
     id: 'panel-text',
@@ -97,6 +101,7 @@ const SCENES = [
       ...DEFAULTS,
       text: 'HYPE\nSIGN',
       fontWeight: 900,
+      font: 'noto-tc',
       margin: 6,
       textColor: {
         type: 'linear', angle: 135,
@@ -116,7 +121,33 @@ const SCENES = [
       panelMode: 'split',
     },
   },
-  // 2. Split + Tint tab — gradient editor (stops bar + sliders).
+  // 2. Split + Font tab — picker rows showing each typeface's character.
+  //    Selected: LXGW WenKai TC so the canvas reflects the calligraphic
+  //    pick. Bundled-vs-system divider visible mid-list.
+  //    text: solid white  |  bg: linear deep-teal→indigo
+  {
+    id: 'panel-font',
+    viewport: { width: 1280, height: 800 },
+    drawer: true, tab: TAB.font,
+    state: {
+      ...DEFAULTS,
+      text: '應援 加油',
+      font: 'lxgw-wenkai-tc',
+      fontWeight: 500,
+      margin: 8,
+      textColor: { type: 'solid', color: '#fef3c7' },
+      bgColor: {
+        type: 'linear', angle: 160,
+        stops: [
+          { id: 's1', color: '#134e4a', position: 0 },
+          { id: 's2', color: '#1e1b4b', position: 100 },
+        ],
+      },
+      panelMode: 'split',
+    },
+  },
+  // 3. Split + Tint tab — gradient editor (stops bar + sliders).
+  //    Noto Serif TC for typographic contrast against panel-text's sans.
   //    text: radial neon pink→magenta→deep-purple  |  bg: solid dark emerald
   {
     id: 'panel-tint',
@@ -124,7 +155,8 @@ const SCENES = [
     drawer: true, tab: TAB.tint,
     state: {
       ...DEFAULTS,
-      text: 'HYPE',
+      text: '慶生',
+      font: 'noto-serif-tc',
       fontWeight: 900,
       textColor: {
         type: 'radial', cx: 50, cy: 50,
@@ -138,7 +170,9 @@ const SCENES = [
       panelMode: 'split',
     },
   },
-  // 3. Floating + Backdrop tab — draggable window with shadow.
+  // 4. Floating + Backdrop tab — draggable window with shadow.
+  //    Atkinson Hyperlegible for a Latin slogan (showcases the
+  //    unambiguous-character font).
   //    text: solid white  |  bg: linear sky→navy
   {
     id: 'panel-floating',
@@ -147,7 +181,8 @@ const SCENES = [
     state: {
       ...DEFAULTS,
       text: 'GO!',
-      fontWeight: 900,
+      font: 'atkinson',
+      fontWeight: 800,
       margin: 8,
       textColor: { type: 'solid', color: '#ffffff' },
       bgColor: {
@@ -162,7 +197,7 @@ const SCENES = [
       floatingHeight: 540,
     },
   },
-  // 4. Split + Tint tab + 6 saved presets — preset library.
+  // 5. Split + Tint tab + 6 saved presets — preset library.
   //    text: solid orange  |  bg: linear dark-plum→dark-navy
   {
     id: 'panel-presets',
@@ -171,6 +206,7 @@ const SCENES = [
     state: {
       ...DEFAULTS,
       text: 'HYPE',
+      font: 'noto-tc',
       fontWeight: 900,
       textColor: { type: 'solid', color: '#fb923c' },
       bgColor: {
@@ -184,7 +220,9 @@ const SCENES = [
       panelMode: 'split',
     },
   },
-  // 5. Split + Settings tab + rotated 90°.
+  // 6. Split + Settings tab + rotated 90°.
+  //    Noto Serif TC; the stacked Chinese title showcases the serif
+  //    detail at the rotation.
   //    text: linear cyan→electric-blue  |  bg: solid dark charcoal
   {
     id: 'panel-rotated',
@@ -192,10 +230,11 @@ const SCENES = [
     drawer: true, tab: TAB.settings,
     state: {
       ...DEFAULTS,
-      text: 'HYPE\nSIGN',
+      text: '加油\n衝啊',
       mode: 'static',
       rotation: 90,
-      fontWeight: 900,
+      font: 'noto-serif-tc',
+      fontWeight: 700,
       margin: 6,
       textColor: {
         type: 'linear', angle: 90,
@@ -205,34 +244,6 @@ const SCENES = [
         ],
       },
       bgColor: { type: 'solid', color: '#12121a' },
-      panelMode: 'split',
-    },
-  },
-  // 6. Split + Tint tab + edit mode — reorder / delete controls.
-  //    text: linear lime→emerald  |  bg: radial warm dark vignette
-  {
-    id: 'panel-edit-mode',
-    viewport: { width: 1280, height: 800 },
-    drawer: true, tab: TAB.tint, scrollPanel: 'bottom', editMode: true,
-    state: {
-      ...DEFAULTS,
-      text: 'HYPE',
-      fontWeight: 900,
-      textColor: {
-        type: 'linear', angle: 0,
-        stops: [
-          { id: 's1', color: '#84cc16', position: 0 },
-          { id: 's2', color: '#059669', position: 100 },
-        ],
-      },
-      bgColor: {
-        type: 'radial', cx: 50, cy: 50,
-        stops: [
-          { id: 's1', color: '#1c1210', position: 0 },
-          { id: 's2', color: '#0a0806', position: 100 },
-        ],
-      },
-      presets: PRESETS_DEMO,
       panelMode: 'split',
     },
   },
@@ -247,6 +258,7 @@ const SCENES = [
       text: 'GO\nTEAM',
       mode: 'static',
       lang: 'en',
+      font: 'noto-tc',
       fontWeight: 800,
       margin: 6,
       textColor: { type: 'solid', color: '#ffffff' },
@@ -261,37 +273,32 @@ const SCENES = [
       mobilePanelHeight: 340,
     },
   },
-  // 8. Mobile bottom sheet (tall) — Tint tab gradient editor.
-  //    text: radial gold→amber→orange  |  bg: linear dark-teal→dark-navy
+  // 8. Mobile bottom sheet (tall) — Font tab, picker rows visible.
+  //    text: solid amber  |  bg: linear dark-teal→deep-purple
   {
-    id: 'mobile-tint',
+    id: 'mobile-font',
     viewport: { width: 390, height: 844, deviceScaleFactor: 2 },
-    drawer: true, tab: TAB.tint, scrollPanel: 200,
+    drawer: true, tab: TAB.font,
     state: {
       ...DEFAULTS,
-      text: 'HYPE',
-      fontWeight: 900,
+      text: '霞鶩文楷',
+      font: 'lxgw-wenkai-tc',
+      fontWeight: 500,
       margin: 6,
-      textColor: {
-        type: 'radial', cx: 50, cy: 50,
-        stops: [
-          { id: 's1', color: '#fbbf24', position: 0 },
-          { id: 's2', color: '#f59e0b', position: 50 },
-          { id: 's3', color: '#ea580c', position: 100 },
-        ],
-      },
+      textColor: { type: 'solid', color: '#fde68a' },
       bgColor: {
         type: 'linear', angle: 135,
         stops: [
           { id: 's1', color: '#0f3d3e', position: 0 },
-          { id: 's2', color: '#0c1631', position: 100 },
+          { id: 's2', color: '#3b0764', position: 100 },
         ],
       },
       panelMode: 'split',
       mobilePanelHeight: 560,
     },
   },
-  // 9a. Settings tab in zh-TW.
+  // 9a. Settings tab in zh-TW. LXGW WenKai TC for a calligraphic
+  //     Chinese-language demo.
   //    text: radial rose→coral  |  bg: solid midnight
   {
     id: 'drawer-zh',
@@ -299,9 +306,10 @@ const SCENES = [
     drawer: true, tab: TAB.settings,
     state: {
       ...DEFAULTS,
-      text: 'HYPE\nSIGN',
+      text: '加油\n衝啊',
       lang: 'zh-TW',
-      fontWeight: 900,
+      font: 'lxgw-wenkai-tc',
+      fontWeight: 500,
       margin: 6,
       textColor: {
         type: 'radial', cx: 50, cy: 50,
@@ -324,7 +332,8 @@ const SCENES = [
       ...DEFAULTS,
       text: 'HYPE\nSIGN',
       lang: 'en',
-      fontWeight: 900,
+      font: 'atkinson',
+      fontWeight: 800,
       margin: 6,
       textColor: { type: 'solid', color: '#fbbf24' },
       bgColor: {
@@ -443,6 +452,26 @@ async function captureHero(browser) {
     });
     await new Promise((r) => setTimeout(r, 600));
 
+    // Measure live marquee geometry so we can compute one full loop period
+    // exactly. The animation resets x from -scaledWidth back to sizeW each
+    // cycle, so loop = (sizeW + scaledWidth) / speed. Capturing for
+    // EXACTLY this duration is what makes the gif's first and last frame
+    // land on identical x positions — i.e. seamless loop with no visible
+    // jump at the wrap-around point.
+    const dims = await page.evaluate(() => {
+      const root = document.querySelector('.display-root');
+      const svg = document.querySelector('.display-root svg');
+      return {
+        sizeW: root ? Math.round(root.offsetWidth) : 0,
+        scaledWidth: svg ? parseInt(svg.getAttribute('width') || '0', 10) : 0,
+      };
+    });
+    if (!dims.sizeW || !dims.scaledWidth) {
+      throw new Error(`could not measure marquee geometry: ${JSON.stringify(dims)}`);
+    }
+    const speed = HERO_STATE.marqueeSpeed;
+    const loopMs = ((dims.sizeW + dims.scaledWidth) / speed) * 1000;
+
     const cdp = await page.target().createCDPSession();
     let frameIdx = 0;
     cdp.on('Page.screencastFrame', async (event) => {
@@ -458,8 +487,15 @@ async function captureHero(browser) {
       } catch {/* ignore — happens when stream is being torn down */}
     });
 
-    const DURATION_MS = 3000;
-    await cdp.send('Page.startScreencast', { format: 'png', everyNthFrame: 2 });
+    // Capture noticeably longer than one loop so we have margin to land on
+    // exactly loopMs of frames in ffmpeg via -t. setTimeout jitter is up
+    // to ~50ms in practice; +500ms is plenty.
+    const captureBufferMs = 500;
+    const DURATION_MS = Math.ceil(loopMs) + captureBufferMs;
+    // everyNthFrame: 1 captures every native rAF tick (~60 fps). Encoding
+    // at 20 fps (an integer divisor of 60) lets ffmpeg pick frames at a
+    // perfectly even stride.
+    await cdp.send('Page.startScreencast', { format: 'png', everyNthFrame: 1 });
     await new Promise((r) => setTimeout(r, DURATION_MS));
     await cdp.send('Page.stopScreencast');
     await new Promise((r) => setTimeout(r, 300));
@@ -467,13 +503,10 @@ async function captureHero(browser) {
     const captured = frameIdx;
     if (captured === 0) throw new Error('no screencast frames captured');
     const captureFps = Math.max(1, Math.round((captured * 1000) / DURATION_MS));
-    // Encode-time downsampling to keep GIF size sane: 60fps native screencast
-    // → 15fps GIF, 1024w → 720w. README needs smooth-enough motion, not
-    // pixel-perfect playback; under 2 MB is the goal.
-    const outFps = 15;
+    const outFps = 20;
     const outWidth = 720;
     console.log(
-      `  captured ${captured} frames in ${DURATION_MS}ms (${captureFps}fps) → encoding at ${outFps}fps, ${outWidth}w`,
+      `  captured ${captured} frames over ${DURATION_MS}ms (~${captureFps}fps); marquee loop = ${loopMs.toFixed(0)}ms, encoding at ${outFps}fps, ${outWidth}w`,
     );
 
     const palette = path.join(FRAMES_DIR, 'palette.png');
@@ -490,6 +523,8 @@ async function captureHero(browser) {
       { stdio: 'pipe' },
     );
 
+    // Trim output to exactly one marquee loop with -t so the first and
+    // last gif frames are at the same x position (seamless loop).
     const out = path.join(OUT_DIR, 'hero.gif');
     execFileSync(
       'ffmpeg',
@@ -499,6 +534,7 @@ async function captureHero(browser) {
         '-i', path.join(FRAMES_DIR, 'frame_%04d.png'),
         '-i', palette,
         '-lavfi', `${vf} [x]; [x][1:v] paletteuse=dither=bayer:bayer_scale=5`,
+        '-t', (loopMs / 1000).toFixed(4),
         '-loop', '0',
         out,
       ],

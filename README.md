@@ -48,19 +48,19 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 
 ### Desktop
 
-| Text tab — multi-line + font weight | Tint tab — gradient editor | Floating panel — backdrop |
+| Text tab — multi-line auto-fit | Font tab — picker with curated faces | Tint tab — gradient editor |
 |---|---|---|
-| ![](docs/screenshots/panel-text.png) | ![](docs/screenshots/panel-tint.png) | ![](docs/screenshots/panel-floating.png) |
+| ![](docs/screenshots/panel-text.png) | ![](docs/screenshots/panel-font.png) | ![](docs/screenshots/panel-tint.png) |
 
-| Color preset library | Edit mode — reorder + delete | Rotation + Settings tab |
+| Floating panel — backdrop | Color preset library | Rotation + Settings tab |
 |---|---|---|
-| ![](docs/screenshots/panel-presets.png) | ![](docs/screenshots/panel-edit-mode.png) | ![](docs/screenshots/panel-rotated.png) |
+| ![](docs/screenshots/panel-floating.png) | ![](docs/screenshots/panel-presets.png) | ![](docs/screenshots/panel-rotated.png) |
 
 ### Mobile
 
-| Bottom sheet — Text tab (top resize handle) | Bottom sheet — gradient editor |
+| Bottom sheet — Text tab (top resize handle) | Bottom sheet — Font tab |
 |---|---|
-| ![](docs/screenshots/mobile-text.png) | ![](docs/screenshots/mobile-tint.png) |
+| ![](docs/screenshots/mobile-text.png) | ![](docs/screenshots/mobile-font.png) |
 
 ### Bilingual
 

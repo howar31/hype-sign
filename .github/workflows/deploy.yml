@@ -8,6 +8,12 @@ on:
       - 'docs/**'
       - 'LICENSE'
       - '.claude/**'
+      # Local tooling only — capture-screenshots.cjs / smoke.cjs / build-fonts.sh
+      # are not used by the deploy job. Their output (screenshots, woff2) lives
+      # under docs/ and public/fonts/ respectively; only those output paths
+      # should drive a redeploy.
+      - 'scripts/**'
+      - '.gitignore'
   workflow_dispatch:
 
 permissions:
