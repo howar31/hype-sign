@@ -76,9 +76,9 @@ async function newPage(browser, viewport, opts = {}) {
 
 async function setState(page, partial) {
   await page.evaluate((p) => {
-    const v = JSON.parse(localStorage.getItem('hype-sign:v1') || '{"state":{},"version":3}');
+    const v = JSON.parse(localStorage.getItem('hype-sign:v1') || '{"state":{},"version":4}');
     v.state = Object.assign(v.state || {}, p);
-    v.version = 3;
+    v.version = 4;
     localStorage.setItem('hype-sign:v1', JSON.stringify(v));
   }, partial);
 }
@@ -364,7 +364,8 @@ test('actions: rotate cycles 0 → 90 → 180 → 270 → 0', async (browser) =>
   await setState(page, { rotation: 0 });
   await reloadAndWait(page);
   await clickCanvas(page);
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[3].click());
+  // Settings tab is index 4 in TABS [text, font, tint, backdrop, settings].
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[4].click());
   await new Promise((r) => setTimeout(r, 100));
   const seq = [0, 90, 180, 270, 0];
   for (let i = 1; i < seq.length; i++) {
@@ -429,8 +430,8 @@ test('color: stop bar is linear-gradient(to right) for radial parent', async (br
   });
   await reloadAndWait(page);
   await clickCanvas(page);
-  // Switch to backdrop tab (index 2)
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[2].click());
+  // Switch to backdrop tab (index 3 in TABS [text, font, tint, backdrop, settings])
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[3].click());
   await new Promise((r) => setTimeout(r, 200));
   const bg = await page.evaluate(() => {
     const bar = document.querySelector('.stop-bar');
@@ -454,7 +455,8 @@ test('preset: edit toggle shows reorder + delete, hides apply', async (browser) 
   });
   await reloadAndWait(page);
   await clickCanvas(page);
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  // Tint tab is index 2 in TABS [text, font, tint, backdrop, settings].
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[2].click());
   await new Promise((r) => setTimeout(r, 250));
   await page.evaluate(() => {
     const body = document.querySelector('.drawer-body');
@@ -504,7 +506,8 @@ test('preset: reorder moves item and persists', async (browser) => {
   });
   await reloadAndWait(page);
   await clickCanvas(page);
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  // Tint tab is index 2 in TABS [text, font, tint, backdrop, settings].
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[2].click());
   await new Promise((r) => setTimeout(r, 250));
   await page.evaluate(() => {
     const body = document.querySelector('.drawer-body');
@@ -547,7 +550,8 @@ test('preset: delete in edit mode removes item', async (browser) => {
   });
   await reloadAndWait(page);
   await clickCanvas(page);
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  // Tint tab is index 2 in TABS [text, font, tint, backdrop, settings].
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[2].click());
   await new Promise((r) => setTimeout(r, 250));
   await page.evaluate(() => {
     const body = document.querySelector('.drawer-body');
@@ -591,7 +595,8 @@ test('preset: edit mode auto-exits when last preset deleted', async (browser) =>
   });
   await reloadAndWait(page);
   await clickCanvas(page);
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[1].click());
+  // Tint tab is index 2 in TABS [text, font, tint, backdrop, settings].
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button[role="tab"]')[2].click());
   await new Promise((r) => setTimeout(r, 250));
   await page.evaluate(() => {
     const body = document.querySelector('.drawer-body');
@@ -640,7 +645,7 @@ test('persist: panelVisible does NOT persist (session-only)', async (browser) =>
   await page.close();
 });
 
-test('persist: v2 storage migrates with panel-state defaults', async (browser) => {
+test('persist: v2 storage migrates to v4 with all defaults seeded', async (browser) => {
   const page = await newPage(browser, DESKTOP);
   await page.evaluate(() => {
     localStorage.setItem('hype-sign:v1', JSON.stringify({
@@ -650,12 +655,61 @@ test('persist: v2 storage migrates with panel-state defaults', async (browser) =
   });
   await reloadAndWait(page);
   const s = await page.evaluate(() => JSON.parse(localStorage.getItem('hype-sign:v1')));
-  eq(s.version, 3, 'persist version bumped to 3');
+  eq(s.version, 4, 'persist version bumped to 4');
   eq(s.state.text, 'V2', 'text preserved');
+  // v2 → v3 additions
   eq(s.state.panelMode, 'split', 'panelMode default seeded');
   truthy(s.state.floatingPos && typeof s.state.floatingPos.x === 'number', 'floatingPos default seeded');
   truthy(typeof s.state.mobilePanelHeight === 'number', 'mobilePanelHeight default seeded');
   truthy(typeof s.state.floatingHeight === 'number', 'floatingHeight default seeded');
+  // v3 → v4 addition
+  eq(s.state.font, 'noto-tc', 'font default seeded');
+  await page.close();
+});
+
+test('persist: v3 storage migrates to v4 with font default', async (browser) => {
+  const page = await newPage(browser, DESKTOP);
+  await page.evaluate(() => {
+    localStorage.setItem('hype-sign:v1', JSON.stringify({
+      state: {
+        text: 'V3',
+        panelMode: 'floating',
+        floatingPos: { x: 50, y: 50 },
+        mobilePanelHeight: 400,
+        floatingHeight: 500,
+        presets: [],
+        textPresets: [],
+      },
+      version: 3,
+    }));
+  });
+  await reloadAndWait(page);
+  const s = await page.evaluate(() => JSON.parse(localStorage.getItem('hype-sign:v1')));
+  eq(s.version, 4, 'persist version bumped to 4');
+  eq(s.state.text, 'V3', 'text preserved');
+  eq(s.state.panelMode, 'floating', 'panelMode preserved');
+  eq(s.state.font, 'noto-tc', 'font default seeded');
+  await page.close();
+});
+
+test('font picker: switching font persists + clamps fontWeight to range', async (browser) => {
+  const page = await newPage(browser, DESKTOP);
+  // Start with weight 900 on noto-tc (supported), then switch to atkinson
+  // (max 800) and confirm the store clamps the weight down.
+  await setState(page, { font: 'noto-tc', fontWeight: 900 });
+  await reloadAndWait(page);
+  await clickCanvas(page); // open panel
+  // FontPicker lives in the Font tab (index 1 in TABS [text, font, tint, backdrop, settings]).
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[1].click());
+  await new Promise((r) => setTimeout(r, 100));
+  const rows = await page.$$('.font-row');
+  truthy(rows.length === 4, 'font picker shows 4 rows');
+  // FONT_ORDER: noto-tc, atkinson, system-sans, system-mono → atkinson is index 1.
+  await rows[1].click();
+  await new Promise((r) => setTimeout(r, 100));
+  const s = await page.evaluate(() => JSON.parse(localStorage.getItem('hype-sign:v1')).state);
+  eq(s.font, 'atkinson', 'font switched to atkinson');
+  eq(s.fontWeight, 800, 'fontWeight clamped to atkinson max (800)');
   await page.close();
 });
 
@@ -686,9 +740,11 @@ test('errors: no console / page errors on full interaction loop', async (browser
   const page = await newPage(browser, DESKTOP);
   await reloadAndWait(page);
   await clickCanvas(page);                                // open panel
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[1].click());  // tint
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[2].click());  // backdrop
-  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[3].click());  // settings
+  // Tab order: 0 text, 1 font, 2 tint, 3 backdrop, 4 settings.
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[1].click());  // font
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[2].click());  // tint
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[3].click());  // backdrop
+  await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[4].click());  // settings
   await page.click('.drawer-mode-toggle');
   await new Promise((r) => setTimeout(r, 200));
   await clickCanvas(page);                                // hide floating

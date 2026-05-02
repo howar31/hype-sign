@@ -33,8 +33,11 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 - **Resizable mobile bottom sheet** — drag the top handle to size the panel from 200 px up to 90% of the viewport.
 - **Edge margin slider** — 0–25% of the viewport's short side; background fills edge-to-edge regardless.
 - **iOS-safe layout** — text respects the iPhone notch and home indicator; background extends to the physical edges; rotation fits the safe canvas exactly.
-- **Font weight slider** — 100 to 900 in steps of 100.
-- **System font** — uses the platform's default system typeface for maximum compatibility across devices.
+- **Font picker** — four typefaces in one tap:
+  - **Noto Sans TC** *(default)* — bundled woff2, full 100–900 wght axis, cross-platform consistent Traditional Chinese.
+  - **Atkinson Hyperlegible** — bundled woff2, 200–800 wght axis, designed by the Braille Institute for unambiguous Latin glyphs (`0/O`, `1/l/I`, `5/S`, `6/9`, `Z/2` are visually distinct) — ideal for displaying email addresses, license plates, or phone numbers on the board.
+  - **System Default** / **System Mono** — zero-byte options that fall through to whatever the device ships (PingFang/JhengHei/Noto on CJK; SF Mono/Cascadia Mono/Roboto Mono for monospace).
+- **Font weight slider** — 100 to 900 in steps of 100, automatically clamped to the selected font's variable-axis range.
 - **Build-version footer** — the Settings tab shows the deployed commit and quietly notes when a new version has been downloaded in the background. Brand-tinted icon links to the GitHub repo, Ko-fi, and PayPal.
 
 ## Screenshots
@@ -63,11 +66,12 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 
 ## Settings panel
 
-The drawer has four tabs:
+The drawer has five tabs:
 
 | Tab | Contents |
 |---|---|
-| Text | text input · static / marquee mode · marquee speed · font weight · text presets · clear text |
+| Text | text input · static / marquee mode · marquee speed · text presets · clear text |
+| Font | font weight slider · font picker (full-width rows with live sample) |
 | Tint | text-color editor · save current color · shared color presets (apply to text, edit mode for reorder + delete) · reset tint |
 | Backdrop | background-color editor · save current color · shared color presets (apply to background, edit mode for reorder + delete) · reset backdrop |
 | Settings | rotate · fullscreen · edge margin · language · build version (with quiet new-version hint) · GitHub / Ko-fi / PayPal icon links |
@@ -91,4 +95,11 @@ For local-development setup, deploy pipeline, icon regeneration, and the full ar
 
 ## License
 
-[MIT](LICENSE)
+Hype Sign source code: [MIT](LICENSE).
+
+### Bundled fonts
+
+Both bundled web fonts are subset and redistributed under the SIL Open Font License 1.1 — see `public/fonts/` for the unmodified license texts.
+
+- **[Noto Sans TC](https://fonts.google.com/noto/specimen/Noto+Sans+TC)** — © Google, Adobe, and contributors. Subset to Big5 Level 1 + Latin + kana + Bopomofo via `scripts/build-fonts.sh`.
+- **[Atkinson Hyperlegible Next](https://www.brailleinstitute.org/freefont/)** — © Braille Institute of America, Inc. Subset to Latin Basic + Extended-A + diacritics.

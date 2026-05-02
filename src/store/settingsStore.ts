@@ -20,6 +20,7 @@ import {
   type Settings,
   type TextPreset,
 } from '../types';
+import { DEFAULT_FONT, clampWeightForFont, isValidFontId, type FontId } from '../lib/fonts';
 
 export type PanelMode = 'split' | 'floating';
 export type FloatingPos = { x: number; y: number };
@@ -58,6 +59,7 @@ type Actions = {
   setLang: (lang: Lang) => void;
   setMargin: (n: number) => void;
   setFontWeight: (n: number) => void;
+  setFont: (id: FontId) => void;
   resetTextColor: () => void;
   resetBgColor: () => void;
   savePreset: (name: string, color: ColorValue) => void;
@@ -109,9 +111,17 @@ export const useSettings = create<State & Actions>()(
         set({ margin: Math.max(MIN_MARGIN, Math.min(MAX_MARGIN, Math.round(n))) }),
       setFontWeight: (n) => {
         const snapped = Math.round(n / FONT_WEIGHT_STEP) * FONT_WEIGHT_STEP;
-        set({
-          fontWeight: Math.max(MIN_FONT_WEIGHT, Math.min(MAX_FONT_WEIGHT, snapped)),
-        });
+        const clamped = Math.max(MIN_FONT_WEIGHT, Math.min(MAX_FONT_WEIGHT, snapped));
+        // Also respect the per-font axis range so a slider drag past the
+        // current font's max snaps back rather than silently rendering the
+        // closest weight (the browser would otherwise pick e.g. 800 for an
+        // input of 900 on Atkinson — confusing because the slider position
+        // and rendered weight diverge).
+        set({ fontWeight: clampWeightForFont(get().font, clamped) });
+      },
+      setFont: (id) => {
+        const w = get().fontWeight;
+        set({ font: id, fontWeight: clampWeightForFont(id, w) });
       },
       resetTextColor: () => set({ textColor: DEFAULT_TEXT_COLOR }),
       resetBgColor: () => set({ bgColor: DEFAULT_BG_COLOR }),
@@ -202,11 +212,13 @@ export const useSettings = create<State & Actions>()(
     }),
     {
       name: 'hype-sign:v1',
-      version: 3,
+      version: 4,
       // v1 → v2: presets used to be { textColor, bgColor } pairs. Split each
       // pair into two single-color presets so the new preset model works.
       // v2 → v3: introduce panelMode / floatingPos / mobilePanelHeight; pure
       // additive — seed defaults if absent.
+      // v3 → v4: introduce `font` (FontId). Default to 'noto-tc' so existing
+      // users land on the bundled cross-platform font on next load.
       migrate: (persisted, version) => {
         const s = persisted as Partial<State> & {
           presets?: Array<Partial<Preset> & { textColor?: ColorValue; bgColor?: ColorValue }>;
@@ -242,6 +254,9 @@ export const useSettings = create<State & Actions>()(
           if (typeof s.mobilePanelHeight !== 'number') s.mobilePanelHeight = DEFAULT_MOBILE_PANEL_HEIGHT;
           if (typeof s.floatingHeight !== 'number') s.floatingHeight = DEFAULT_FLOATING_HEIGHT;
         }
+        if (version < 4) {
+          if (!isValidFontId(s.font)) s.font = DEFAULT_FONT;
+        }
         return s as State;
       },
       partialize: (s) => ({
@@ -254,6 +269,7 @@ export const useSettings = create<State & Actions>()(
         lang: s.lang,
         margin: s.margin,
         fontWeight: s.fontWeight,
+        font: s.font,
         presets: s.presets,
         textPresets: s.textPresets,
         panelMode: s.panelMode,

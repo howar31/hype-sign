@@ -2,11 +2,12 @@ import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSettings } from '../../store/settingsStore';
 import { GradientDef, fillFor } from '../../lib/colorToSvg';
 import {
-  FONT_FAMILY,
   LINE_HEIGHT_FACTOR,
   REFERENCE_FONT_SIZE,
   measureLineWidth,
 } from '../../lib/measureText';
+import { getFontFamily } from '../../lib/fonts';
+import { useFontReady } from '../../lib/useFontReady';
 
 // Where to place the alphabetic baseline of the first line within its slot.
 // We avoid dominant-baseline="hanging" because Safari clips text above
@@ -20,6 +21,9 @@ export function StaticDisplay() {
   const textColor = useSettings((s) => s.textColor);
   const margin = useSettings((s) => s.margin);
   const fontWeight = useSettings((s) => s.fontWeight);
+  const fontId = useSettings((s) => s.font);
+  const fontFamily = getFontFamily(fontId);
+  const fontReady = useFontReady(fontFamily, text || '應', fontWeight);
 
   const reactId = useId();
   const gradId = `text-grad-${reactId.replace(/:/g, '')}`;
@@ -35,8 +39,10 @@ export function StaticDisplay() {
   const lineHeight = fontSize * LINE_HEIGHT_FACTOR;
 
   const widths = useMemo(
-    () => lines.map((l) => measureLineWidth(l, fontSize, fontWeight)),
-    [lines, fontSize, fontWeight],
+    () => lines.map((l) => measureLineWidth(l, fontSize, fontWeight, fontFamily)),
+    // fontReady triggers re-measure after web fonts finish loading.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lines, fontSize, fontWeight, fontFamily, fontReady],
   );
   const estMaxWidth = Math.max(1, ...widths);
   const estTotalHeight = Math.max(1, lines.length * lineHeight);
@@ -75,7 +81,7 @@ export function StaticDisplay() {
       }
       return next;
     });
-  }, [text, fontSize, lineHeight, lines.length, fontWeight]);
+  }, [text, fontSize, lineHeight, lines.length, fontWeight, fontFamily, fontReady]);
 
   const isEmpty = lines.every((l) => l.trim() === '');
 
@@ -105,7 +111,7 @@ export function StaticDisplay() {
           <text
             ref={textRef}
             x={0}
-            fontFamily={FONT_FAMILY}
+            fontFamily={fontFamily}
             fontWeight={fontWeight}
             fontSize={fontSize}
             fill={fill}

@@ -21,6 +21,8 @@ export type RadialGradient = {
 
 export type ColorValue = SolidColor | LinearGradient | RadialGradient;
 
+import type { FontId } from './lib/fonts';
+
 export type Mode = 'static' | 'marquee';
 export type Lang = 'zh-TW' | 'en';
 export type Rotation = 0 | 90 | 180 | 270;
@@ -49,6 +51,8 @@ export type Settings = {
   margin: number;
   /** Display font weight (400–900, snapped to multiples of 100). */
   fontWeight: number;
+  /** Selected display font from the curated picker (see src/lib/fonts.ts). */
+  font: FontId;
 };
 
 export const DEFAULT_TEXT_COLOR: ColorValue = { type: 'solid', color: '#FFFFFF' };
@@ -64,6 +68,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lang: 'zh-TW',
   margin: 0,
   fontWeight: 800,
+  font: 'noto-tc',
 };
 
 export const MIN_SPEED = 100;

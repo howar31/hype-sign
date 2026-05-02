@@ -52,7 +52,11 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,woff2}'],
+        // Default is 2 MiB; the subsetted Noto Sans TC variable woff2 is
+        // ~1.7 MB which is just under, but raise the ceiling so we have
+        // room before someone bumps the subset coverage.
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         cleanupOutdatedCaches: true,
       },
       devOptions: {

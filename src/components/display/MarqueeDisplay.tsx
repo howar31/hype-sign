@@ -2,11 +2,12 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 're
 import { useSettings } from '../../store/settingsStore';
 import { GradientDef, fillFor } from '../../lib/colorToSvg';
 import {
-  FONT_FAMILY,
   LINE_HEIGHT_FACTOR,
   REFERENCE_FONT_SIZE,
   measureLineWidth,
 } from '../../lib/measureText';
+import { getFontFamily } from '../../lib/fonts';
+import { useFontReady } from '../../lib/useFontReady';
 import { useElementSize } from '../../hooks/useElementSize';
 
 type InkBox = { x: number; y: number; w: number; h: number };
@@ -17,6 +18,9 @@ export function MarqueeDisplay() {
   const textColor = useSettings((s) => s.textColor);
   const margin = useSettings((s) => s.margin);
   const fontWeight = useSettings((s) => s.fontWeight);
+  const fontId = useSettings((s) => s.font);
+  const fontFamily = getFontFamily(fontId);
+  const fontReady = useFontReady(fontFamily, text || '應', fontWeight);
 
   const [containerRef, size] = useElementSize<HTMLDivElement>();
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -34,8 +38,10 @@ export function MarqueeDisplay() {
   const fontSize = REFERENCE_FONT_SIZE;
   const lineHeight = fontSize * LINE_HEIGHT_FACTOR;
   const textWidth = useMemo(
-    () => measureLineWidth(joined, fontSize, fontWeight),
-    [joined, fontSize, fontWeight],
+    () => measureLineWidth(joined, fontSize, fontWeight, fontFamily),
+    // fontReady triggers re-measure after web fonts finish loading.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [joined, fontSize, fontWeight, fontFamily, fontReady],
   );
 
   // Measure the actual ink bounding box so the SVG viewBox tightly fits
@@ -73,7 +79,7 @@ export function MarqueeDisplay() {
       }
       return next;
     });
-  }, [joined, fontSize, fontWeight, textWidth]);
+  }, [joined, fontSize, fontWeight, textWidth, fontFamily, fontReady]);
 
   // Round size + scaledWidth to integers. Fractional CSS dims (esp. on a
   // rotated parent) cause iOS Safari's GPU compositor to anti-alias edges
@@ -163,7 +169,7 @@ export function MarqueeDisplay() {
                 ref={textRef}
                 x={0}
                 y={lineHeight * 0.85}
-                fontFamily={FONT_FAMILY}
+                fontFamily={fontFamily}
                 fontWeight={fontWeight}
                 fontSize={fontSize}
                 fill={fill}

@@ -23,11 +23,13 @@ src/
 ├── App.tsx                               root: rotation transform + display + toggle button + drawer
 ├── types.ts                              ColorValue, Settings, Preset, TextPreset, DEFAULT_*
 ├── store/
-│   └── settingsStore.ts                  single zustand store; persist key "hype-sign:v1", version 2
+│   └── settingsStore.ts                  single zustand store; persist key "hype-sign:v1", version 4
 ├── lib/
 │   ├── colorToCss.ts                     ColorValue → CSS background string
 │   ├── colorToSvg.tsx                    ColorValue → <linearGradient>/<radialGradient> defs
 │   ├── measureText.ts                    canvas-based text width measurement (ref font size)
+│   ├── fonts.ts                          FontId model: FONTS table, getFontFamily, clampWeightForFont
+│   ├── useFontReady.ts                   document.fonts.load() hook for re-measure after web font load
 │   ├── swUpdate.ts                       passive controllerchange listener + useUpdateReady() hook
 │   └── i18n.ts                           ZH/EN dict + useT() hook
 ├── hooks/
@@ -39,13 +41,14 @@ src/
 │   │   ├── StaticDisplay.tsx             auto-fit multi-line via SVG + getBBox viewBox
 │   │   └── MarqueeDisplay.tsx            single-line scroller via requestAnimationFrame
 │   ├── settings/
-│   │   ├── SettingsPanel.tsx             drawer + 4 tabs (Text / Tint / Backdrop / Settings)
+│   │   ├── SettingsPanel.tsx             drawer + 5 tabs (Text / Font / Tint / Backdrop / Settings)
 │   │   ├── sections/
 │   │   │   ├── TextSection.tsx           TextInput + ModeToggle + SpeedSlider + TextPresetManager + ClearTextButton
+│   │   │   ├── FontSection.tsx           FontWeightSlider + FontPicker (full-width rows showing FONT_SAMPLE_LINES)
 │   │   │   ├── TextColorSection.tsx      ColorEditor (text) + SaveCurrentColor + ColorPresetList(text) + ResetColorButton(tint)
 │   │   │   ├── BackgroundColorSection.tsx ColorEditor (bg) + SaveCurrentColor + ColorPresetList(bg) + ResetColorButton(bg)
 │   │   │   └── OtherSection.tsx          RotateButton + FullscreenButton + MarginSlider + LanguageToggle + version footer
-│   │   ├── TextInput.tsx · ModeToggle.tsx · SpeedSlider.tsx · RotateButton.tsx
+│   │   ├── TextInput.tsx · ModeToggle.tsx · SpeedSlider.tsx · FontPicker.tsx · FontWeightSlider.tsx · RotateButton.tsx
 │   │   ├── FullscreenButton.tsx · LanguageToggle.tsx · ClearTextButton.tsx · ResetColorButton.tsx
 │   │   ├── color/
 │   │   │   ├── ColorEditor.tsx           tabs: solid / linear / radial; per-type snapshots
@@ -94,7 +97,7 @@ type Preset     = { id; name; color: ColorValue }; // single-color preset (was {
 type TextPreset = { id; name; text };              // text-content preset
 ```
 
-Persisted under `hype-sign:v1` / version 3. v1 → v2 migration splits old `{textColor, bgColor}` preset pairs into two single-color presets; v2 → v3 seeds panel-mode defaults.
+Persisted under `hype-sign:v1` / version 4. v1 → v2 migration splits old `{textColor, bgColor}` preset pairs into two single-color presets; v2 → v3 seeds panel-mode defaults; v3 → v4 seeds `font: 'noto-tc'` so existing users land on the bundled cross-platform font on next load.
 
 `DEFAULT_SETTINGS` ships text=`'Hype Sign\nClick for Settings\n按一下開啟設定'`, white-on-black, static mode, 400 px/s, no rotation, zh-TW, `margin=0`, `fontWeight=800`.
 
@@ -148,8 +151,9 @@ Single-line continuous scroller at constant pixels-per-second.
 
 ## Settings panel
 
-Drawer with four tabs (in order):
-- **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), font-weight slider, text presets, clear-text button at end
+Drawer with five tabs (in order):
+- **Text** (`文字`) — text input, mode toggle, marquee-speed slider (when mode=marquee), text presets, clear-text button at end
+- **Font** (`字體`) — font-weight slider, font picker (full-width rows; each row renders the sample in that font at the slider's current weight, clamped per-font). The sample comes from `FONT_SAMPLE_LINES`: line 1 follows the active UI language (zh-TW couplet / en branded phrase), line 2 is the unambiguous-character pairs (always shown). A small `+ 中英對照 / + Both langs` toggle in the section header adds the OTHER language's line for side-by-side comparison (session-only, not persisted). Picker also has an explanatory note. Kept separate from Text so users don't expect text presets to capture the font choice.
 - **Tint** (`字色`) — text-color editor, save-current-color form, shared color preset list (apply hits text), reset-tint button at end
 - **Backdrop** (`底色`) — background-color editor, save-current-color form, shared color preset list (apply hits bg), reset-backdrop button at end
 - **Settings** (`設定`) — rotate 90° cycle, fullscreen, edge-margin slider, language toggle, build-version footer (commit hash + new-version-ready hint when the SW has activated a fresh bundle, brand icon row: GitHub / Ko-fi / PayPal)
@@ -191,11 +195,35 @@ No `alert()` / native dialog is used anywhere — they break the standalone PWA 
 
 ## Font
 
-`measureText.ts` exports the canonical `FONT_FAMILY` string — a system-font fallback chain. `main.tsx` reads it on boot and writes the value into the `--font-family` CSS custom property on `documentElement`. `global.css` then references `var(--font-family, system-ui, sans-serif)` so canvas-based width measurement and the actual rendered CSS font cannot drift apart. Change the chain in `measureText.ts` only.
+The canvas display font is user-selectable via `FontPicker` in the Text tab. The picker offers four options defined as a single source of truth in `src/lib/fonts.ts`:
 
-Cross-device, the rendered font is whatever the device has (SF Pro on Apple, Segoe UI on Windows, Roboto/Noto Sans on Android, PingFang/JhengHei/Noto for CJK). Visual consistency across devices therefore varies — bundling a web font (Inter Variable for Latin, optionally Noto Sans TC subset for Chinese) is a known follow-up but not yet implemented.
+| `FontId` | Source | Bundle | wght axis | Purpose |
+|---|---|---|---|---|
+| `noto-tc` *(default)* | bundled woff2 | ~1.7 MB | 100–900 continuous | Cross-platform consistent Chinese; default for new installs |
+| `atkinson` | bundled woff2 | ~42 KB | 200–800 continuous | Latin unambiguous-character font (0/O, 1/l/I, 5/S, 6/9, Z/2 strongly differentiated) for email/license-plate display |
+| `system-sans` | OS fallback chain | 0 | 100–900 | Each OS renders with its own native font (PingFang/JhengHei/Noto/Roboto) |
+| `system-mono` | OS mono fallback chain | 0 | 100–700 | SF Mono / Cascadia Mono / Roboto Mono / Menlo etc. |
 
-`fontWeight` is a user setting (100–900, step 100, default 800). The CSS spec accepts 1–1000 but only the listed steps map to OpenType weights. If the active font lacks the requested weight, the browser substitutes the closest available — both display surfaces and canvas measurement use the same value, so the substitution is consistent.
+**`measureText.ts`** exposes `getFontFamily(id)` and a family-aware `measureLineWidth(text, size, weight, family)` — the display components pass the active font's family stack so canvas measurement and SVG rendering cannot drift apart. The legacy `FONT_FAMILY` constant remains for SSR / pre-hydration callers and points at the default font's stack.
+
+**`useFontReady(family, sample, weight)`** wraps `document.fonts.load()` and flips a state value once the requested combination is loaded. `StaticDisplay` and `MarqueeDisplay` include `fontReady` in their `useMemo` / `useLayoutEffect` deps so canvas width measurement and SVG `getBBox` re-run after a bundled web font finishes downloading — otherwise the initial measurement uses a fallback font and the viewBox is wrong.
+
+**UI text always renders in the system stack.** `main.tsx` writes `getFontFamily('system-sans')` into `--font-family` on `documentElement` so the settings panel chrome stays neutral and renders before any web font loads. The user-selected display font applies only on the canvas.
+
+**`fontWeight`** is a user setting (100–900, step 100, default 800). The store's `setFont` and `setFontWeight` actions both call `clampWeightForFont(id, w)` so dragging the slider past the active font's wght axis range snaps back rather than silently producing a synthetic-bold render — `FontWeightSlider` reads the current font's `weightRange` to set its own min/max bounds.
+
+### Bundled font subsetting
+
+Source TTFs live in `fonts-src/` (gitignored). `scripts/build-fonts.sh` runs `pyftsubset` (from Homebrew `fonttools`) to produce the woff2 files committed in `public/fonts/`:
+
+- **Noto Sans TC** keeps the wght variable axis, with the codepoint set restricted to Big5 Level 1 (5,401 most-common Traditional Chinese characters) plus Latin Basic+Extended-A, general punctuation, CJK symbols, full Hiragana + Katakana + Katakana extensions, Bopomofo, and Halfwidth/Fullwidth forms. Results in ~1.7 MB. Uncommon names / 客語擴充字 / 和製漢字 fall back per-glyph through the system stack.
+- **Atkinson Hyperlegible Next** keeps the wght variable axis with Latin Basic + Extended-A + diacritics + general punctuation. Results in ~42 KB.
+
+Re-run `bash scripts/build-fonts.sh` after replacing the source TTFs in `fonts-src/` to refresh the bundled files. The OFL license files for both fonts ship next to them in `public/fonts/`.
+
+### Workbox + woff2
+
+`vite.config.ts` adds `woff2` to `workbox.globPatterns` and raises `maximumFileSizeToCacheInBytes` to 3 MiB so the Noto Sans TC woff2 is precached. The two woff2 files are ~1.7 MB total; full installable PWA dist is ~2.3 MB.
 
 ## i18n (`src/lib/i18n.ts`)
 

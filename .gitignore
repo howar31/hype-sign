@@ -21,3 +21,7 @@ dev-dist
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Font sources — raw TTF/intermediate subset artefacts, regenerated via
+# scripts/build-fonts.sh. Only the final WOFF2 files in public/fonts/ ship.
+fonts-src

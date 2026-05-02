@@ -10,10 +10,10 @@ const OUT_DIR = path.join(REPO, 'docs/screenshots');
 const FRAMES_DIR = '/tmp/hype-frames';
 const URL = 'http://localhost:5173/hype-sign/';
 const STORE_KEY = 'hype-sign:v1';
-const STORE_VERSION = 3;
+const STORE_VERSION = 4;
 
 // Tab indices in .drawer-tabs (0-based, in render order from SettingsPanel TABS).
-const TAB = { text: 0, tint: 1, backdrop: 2, settings: 3 };
+const TAB = { text: 0, font: 1, tint: 2, backdrop: 3, settings: 4 };
 
 const onlyArg = process.argv.find((a) => a.startsWith('--only='));
 const ONLY = onlyArg ? onlyArg.slice('--only='.length).split(',') : null;
@@ -29,6 +29,7 @@ const DEFAULTS = {
   lang: 'zh-TW',
   margin: 6,
   fontWeight: 800,
+  font: 'noto-tc',
   textColor: { type: 'solid', color: '#ffffff' },
   bgColor: { type: 'solid', color: '#0f172a' },
   presets: [],

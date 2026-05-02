@@ -3,6 +3,7 @@ import { useT } from '../../lib/i18n';
 import { useWakeLock } from '../../hooks/useWakeLock';
 import { useSettings } from '../../store/settingsStore';
 import { TextSection } from './sections/TextSection';
+import { FontSection } from './sections/FontSection';
 import { TextColorSection } from './sections/TextColorSection';
 import { BackgroundColorSection } from './sections/BackgroundColorSection';
 import { OtherSection } from './sections/OtherSection';
@@ -11,10 +12,11 @@ type Props = {
   isDesktop: boolean;
 };
 
-type Tab = 'text' | 'tint' | 'backdrop' | 'settings';
+type Tab = 'text' | 'font' | 'tint' | 'backdrop' | 'settings';
 
 const TABS: { id: Tab; key: string }[] = [
   { id: 'text', key: 'tab.text' },
+  { id: 'font', key: 'tab.font' },
   { id: 'tint', key: 'tab.tint' },
   { id: 'backdrop', key: 'tab.backdrop' },
   { id: 'settings', key: 'tab.settings' },
@@ -324,6 +326,9 @@ export function SettingsPanel({ isDesktop }: Props) {
       <div className="drawer-body">
         <div className="tab-pane" hidden={tab !== 'text'}>
           <TextSection />
+        </div>
+        <div className="tab-pane" hidden={tab !== 'font'}>
+          <FontSection />
         </div>
         <div className="tab-pane" hidden={tab !== 'tint'}>
           <TextColorSection />

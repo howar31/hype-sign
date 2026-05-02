@@ -9,6 +9,7 @@ const ZH: Dict = {
   'settings.close': '關閉',
 
   'tab.text': '文字',
+  'tab.font': '字體',
   'tab.tint': '字色',
   'tab.backdrop': '底色',
   'tab.settings': '設定',
@@ -37,6 +38,15 @@ const ZH: Dict = {
 
   'weight.label': '字體粗細',
   'weight.note': '若目前字體不支援該粗細，會自動套用最接近的可用值',
+
+  'font.label': '字體',
+  'font.note': '切換字體會自動將字重調整到該字體支援的範圍；文字樣板不會記錄字體選擇',
+  'font.toggle.expand': '＋ 中英對照',
+  'font.toggle.compact': '－ 收合',
+  'font.systemSans': '系統預設',
+  'font.systemMono': '系統等寬',
+  'font.notoTc': 'Noto Sans TC',
+  'font.atkinson': 'Atkinson 易讀',
 
   'rotate.label': '旋轉畫面',
   'rotate.button': '旋轉 90°',
@@ -102,6 +112,7 @@ const EN: Dict = {
   'settings.close': 'Close',
 
   'tab.text': 'Text',
+  'tab.font': 'Font',
   'tab.tint': 'Tint',
   'tab.backdrop': 'Backdrop',
   'tab.settings': 'Settings',
@@ -130,6 +141,15 @@ const EN: Dict = {
 
   'weight.label': 'Font weight',
   'weight.note': "If the current font doesn't ship this weight, the closest available one is used",
+
+  'font.label': 'Font',
+  'font.note': "Switching fonts may snap the weight to the new font's supported range; text presets do not capture font choice",
+  'font.toggle.expand': '+ Both langs',
+  'font.toggle.compact': '− Collapse',
+  'font.systemSans': 'System Default',
+  'font.systemMono': 'System Mono',
+  'font.notoTc': 'Noto Sans TC',
+  'font.atkinson': 'Atkinson Hyperlegible',
 
   'rotate.label': 'Rotate display',
   'rotate.button': 'Rotate 90°',

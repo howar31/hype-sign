@@ -1,3 +1,25 @@
+/* Bundled web fonts. Subsetted via scripts/build-fonts.sh, served from
+   public/fonts/. Vite rewrites these absolute paths to honour `base` at
+   build time. font-display: swap so the canvas falls back to the system
+   stack until the woff2 finishes downloading (the display components
+   re-measure once useFontReady flips). */
+@font-face {
+  font-family: 'NotoSansTC';
+  src: url('/hype-sign/fonts/NotoSansTC.woff2') format('woff2-variations'),
+       url('/hype-sign/fonts/NotoSansTC.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'AtkinsonHyperlegibleNext';
+  src: url('/hype-sign/fonts/AtkinsonHyperlegibleNext.woff2') format('woff2-variations'),
+       url('/hype-sign/fonts/AtkinsonHyperlegibleNext.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Liquid-glass palette — translucent surfaces over heavy backdrop blur. */
   --glass-bg: rgba(22, 22, 26, 0.58);
@@ -695,6 +717,67 @@ input[type='range'] {
 /* ---------------------------------------------------------------------------
  * Preset rows
  * ------------------------------------------------------------------------ */
+/* Font picker — full-width rows, one font per row. Clicking a row applies
+   the font; the row itself renders the unified sample text in that font
+   so the user can compare typefaces visually without scrolling sideways. */
+.font-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.font-row {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-stroke);
+  background: var(--glass-bg-elev);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.font-row:hover {
+  background: var(--glass-bg-elev-hover);
+  border-color: var(--glass-stroke-strong);
+}
+
+.font-row.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+
+.font-row-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  /* Label always renders in the system font so it stays readable even when
+     the row's own font can't render the localised label. */
+  font-family: system-ui, -apple-system, 'Segoe UI', 'PingFang TC',
+    'Microsoft JhengHei', sans-serif;
+}
+
+.font-row-sample {
+  font-size: 18px;
+  line-height: 1.5;
+  /* The sample is multi-line (CJK couplet + English phrase + unambiguous
+     character pairs); preserve embedded \n while still allowing each line
+     to wrap inside an extra-narrow drawer if needed. */
+  white-space: pre-line;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .preset-section-header {
   display: flex;
   align-items: center;
