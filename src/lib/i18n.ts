@@ -92,6 +92,8 @@ const ZH: Dict = {
 
   'version.label': '版本',
   'version.updateReady': '新版已就緒，重開後生效',
+  'version.repo': 'GitHub',
+  'version.sponsor': '贊助',
 };
 
 const EN: Dict = {
@@ -183,6 +185,8 @@ const EN: Dict = {
 
   'version.label': 'Version',
   'version.updateReady': 'New version ready — reopen to apply',
+  'version.repo': 'GitHub',
+  'version.sponsor': 'Sponsor',
 };
 
 const DICTS: Record<Lang, Dict> = {

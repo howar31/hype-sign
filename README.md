@@ -70,7 +70,7 @@ The drawer has four tabs:
 | Text | text input · static / marquee mode · marquee speed · font weight · text presets · clear text |
 | Tint | text-color editor · save current color · shared color presets (apply to text, edit mode for reorder + delete) · reset tint |
 | Backdrop | background-color editor · save current color · shared color presets (apply to background, edit mode for reorder + delete) · reset backdrop |
-| Settings | rotate · fullscreen · edge margin · language · build version (with quiet new-version hint) |
+| Settings | rotate · fullscreen · edge margin · language · build version (with quiet new-version hint) · GitHub & sponsor links |
 
 A tap on the design canvas opens or closes the panel. The panel overlays the canvas; closing it reveals the unobstructed design.
 

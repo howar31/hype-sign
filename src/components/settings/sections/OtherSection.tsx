@@ -16,9 +16,30 @@ export function OtherSection() {
       </div>
       <MarginSlider />
       <LanguageToggle />
-      <div className="muted" style={{ fontSize: 11, marginTop: 8 }}>
-        {t('version.label')}: {__COMMIT__}
-        {updateReady ? ` · ${t('version.updateReady')}` : ''}
+      <div
+        className="muted"
+        style={{ fontSize: 11, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 2 }}
+      >
+        <span>
+          {t('version.label')}: {__COMMIT__}
+          {updateReady ? ` · ${t('version.updateReady')}` : ''}
+        </span>
+        <a
+          href="https://github.com/howar31/hype-sign"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'inherit' }}
+        >
+          {t('version.repo')}
+        </a>
+        <a
+          href="https://donate.howar31.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'inherit' }}
+        >
+          {t('version.sponsor')}
+        </a>
       </div>
     </>
   );
