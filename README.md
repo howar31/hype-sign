@@ -33,10 +33,14 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 - **Resizable mobile bottom sheet** — drag the top handle to size the panel from 200 px up to 90% of the viewport.
 - **Edge margin slider** — 0–25% of the viewport's short side; background fills edge-to-edge regardless.
 - **iOS-safe layout** — text respects the iPhone notch and home indicator; background extends to the physical edges; rotation fits the safe canvas exactly.
-- **Font picker** — four typefaces in one tap:
-  - **Noto Sans TC** *(default)* — bundled woff2, full 100–900 wght axis, cross-platform consistent Traditional Chinese.
-  - **Atkinson Hyperlegible** — bundled woff2, 200–800 wght axis, designed by the Braille Institute for unambiguous Latin glyphs (`0/O`, `1/l/I`, `5/S`, `6/9`, `Z/2` are visually distinct) — ideal for displaying email addresses, license plates, or phone numbers on the board.
+- **Font picker** — six typefaces grouped as bundled (curated) faces above + system fallbacks below, separated by a divider:
+  - **Noto Sans TC** *(default)* — modern sans, full 100–900 wght axis, cross-platform consistent Traditional Chinese.
+  - **Noto Serif TC** — formal Ming-style serif, 200–900 wght axis.
+  - **LXGW WenKai TC** — calligraphy / Kai script with handwriting flavour (3 weights: 300 / 400 / 500).
+  - **Atkinson Hyperlegible** — designed by the Braille Institute for unambiguous Latin glyphs (`0/O`, `1/l/I`, `5/S`, `6/9`, `Z/2` are visually distinct) — ideal for displaying email addresses, license plates, or phone numbers on the board.
   - **System Default** / **System Mono** — zero-byte options that fall through to whatever the device ships (PingFang/JhengHei/Noto on CJK; SF Mono/Cascadia Mono/Roboto Mono for monospace).
+
+  Single-weight fonts are excluded by design — the font weight slider needs at least two values to be useful.
 - **Font weight slider** — 100 to 900 in steps of 100, automatically clamped to the selected font's variable-axis range.
 - **Build-version footer** — the Settings tab shows the deployed commit and quietly notes when a new version has been downloaded in the background. Brand-tinted icon links to the GitHub repo, Ko-fi, and PayPal.
 
@@ -99,7 +103,11 @@ Hype Sign source code: [MIT](LICENSE).
 
 ### Bundled fonts
 
-Both bundled web fonts are subset and redistributed under the SIL Open Font License 1.1 — see `public/fonts/` for the unmodified license texts.
+All bundled web fonts are subset and redistributed under the SIL Open Font License 1.1 — see `public/fonts/` for the unmodified license texts.
 
-- **[Noto Sans TC](https://fonts.google.com/noto/specimen/Noto+Sans+TC)** — © Google, Adobe, and contributors. Subset to Big5 Level 1 + Latin + kana + Bopomofo via `scripts/build-fonts.sh`.
-- **[Atkinson Hyperlegible Next](https://www.brailleinstitute.org/freefont/)** — © Braille Institute of America, Inc. Subset to Latin Basic + Extended-A + diacritics.
+- **[Noto Sans TC](https://fonts.google.com/noto/specimen/Noto+Sans+TC)** — © Google, Adobe, and contributors.
+- **[Noto Serif TC](https://fonts.google.com/noto/specimen/Noto+Serif+TC)** — © Google, Adobe, and contributors.
+- **[LXGW WenKai TC](https://github.com/lxgw/LxgwWenKaiTC)** — © LXGW Project Authors, derived from Klee One.
+- **[Atkinson Hyperlegible Next](https://www.brailleinstitute.org/freefont/)** — © Braille Institute of America, Inc.
+
+All CJK fonts are subset to Big5 Level 1 + Latin + kana + Bopomofo via `scripts/build-fonts.sh`. Atkinson Hyperlegible is subset to Latin Basic + Extended-A + diacritics.

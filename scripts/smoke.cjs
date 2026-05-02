@@ -703,13 +703,17 @@ test('font picker: switching font persists + clamps fontWeight to range', async 
   await page.evaluate(() => document.querySelectorAll('.drawer-tabs button')[1].click());
   await new Promise((r) => setTimeout(r, 100));
   const rows = await page.$$('.font-row');
-  truthy(rows.length === 4, 'font picker shows 4 rows');
-  // FONT_ORDER: noto-tc, atkinson, system-sans, system-mono → atkinson is index 1.
-  await rows[1].click();
+  truthy(rows.length === 6, 'font picker shows 6 rows');
+  // FONT_ORDER: noto-tc, noto-serif-tc, lxgw-wenkai-tc, atkinson,
+  // system-sans, system-mono → atkinson is index 3.
+  await rows[3].click();
   await new Promise((r) => setTimeout(r, 100));
   const s = await page.evaluate(() => JSON.parse(localStorage.getItem('hype-sign:v1')).state);
   eq(s.font, 'atkinson', 'font switched to atkinson');
   eq(s.fontWeight, 800, 'fontWeight clamped to atkinson max (800)');
+  // Divider rendered between bundled (atkinson, idx 3) and system-sans (idx 4).
+  const dividers = await page.$$('.font-divider');
+  eq(dividers.length, 1, 'one divider between bundled and system fonts');
   await page.close();
 });
 

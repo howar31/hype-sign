@@ -195,14 +195,18 @@ No `alert()` / native dialog is used anywhere — they break the standalone PWA 
 
 ## Font
 
-The canvas display font is user-selectable via `FontPicker` in the Text tab. The picker offers four options defined as a single source of truth in `src/lib/fonts.ts`:
+The canvas display font is user-selectable via `FontPicker` in the Font tab. The picker offers six options defined as a single source of truth in `src/lib/fonts.ts`. A horizontal divider in the picker separates bundled faces (top) from system fallbacks (bottom). Single-weight fonts are intentionally excluded so the per-font weight slider always has at least two values to interpolate between.
 
 | `FontId` | Source | Bundle | wght axis | Purpose |
 |---|---|---|---|---|
-| `noto-tc` *(default)* | bundled woff2 | ~1.7 MB | 100–900 continuous | Cross-platform consistent Chinese; default for new installs |
+| `noto-tc` *(default)* | bundled woff2 | ~1.8 MB | 100–900 continuous | Modern sans, cross-platform consistent Chinese; default for new installs |
+| `noto-serif-tc` | bundled woff2 | ~2.4 MB | 200–900 continuous | Formal serif (Ming style); for typography variety vs `noto-tc` |
+| `lxgw-wenkai-tc` | bundled woff2 (3 statics) | ~5.3 MB total | 300 / 400 / 500 discrete | Calligraphy / Kai script — handwriting-flavoured display face |
 | `atkinson` | bundled woff2 | ~42 KB | 200–800 continuous | Latin unambiguous-character font (0/O, 1/l/I, 5/S, 6/9, Z/2 strongly differentiated) for email/license-plate display |
 | `system-sans` | OS fallback chain | 0 | 100–900 | Each OS renders with its own native font (PingFang/JhengHei/Noto/Roboto) |
 | `system-mono` | OS mono fallback chain | 0 | 100–700 | SF Mono / Cascadia Mono / Roboto Mono / Menlo etc. |
+
+Total bundled: ~9.6 MB woff2 across 6 files (NotoSans + NotoSerif + 3× LXGW + Atkinson). All licensed under SIL OFL 1.1.
 
 **`measureText.ts`** exposes `getFontFamily(id)` and a family-aware `measureLineWidth(text, size, weight, family)` — the display components pass the active font's family stack so canvas measurement and SVG rendering cannot drift apart. The legacy `FONT_FAMILY` constant remains for SSR / pre-hydration callers and points at the default font's stack.
 
@@ -216,14 +220,14 @@ The canvas display font is user-selectable via `FontPicker` in the Text tab. The
 
 Source TTFs live in `fonts-src/` (gitignored). `scripts/build-fonts.sh` runs `pyftsubset` (from Homebrew `fonttools`) to produce the woff2 files committed in `public/fonts/`:
 
-- **Noto Sans TC** keeps the wght variable axis, with the codepoint set restricted to Big5 Level 1 (5,401 most-common Traditional Chinese characters) plus Latin Basic+Extended-A, general punctuation, CJK symbols, full Hiragana + Katakana + Katakana extensions, Bopomofo, and Halfwidth/Fullwidth forms. Results in ~1.7 MB. Uncommon names / 客語擴充字 / 和製漢字 fall back per-glyph through the system stack.
+- **All bundled CJK fonts** (Noto Sans TC, Noto Serif TC, LXGW WenKai TC ×3) share the same Big5 Level 1 (5,401 chars) + Latin Basic + Extended-A + general punctuation + CJK symbols + Hiragana + Katakana + Katakana extensions + Bopomofo + Halfwidth/Fullwidth subset range. Variable wght axis is preserved on Noto Sans TC and Noto Serif TC; LXGW WenKai TC ships as three discrete static weights (Light 300 / Regular 400 / Medium 500). Resulting woff2 sizes: 1.8 MB / 2.4 MB / 1.7-1.8 MB each. Uncommon names / 客語擴充字 / 和製漢字 fall back per-glyph through the system stack.
 - **Atkinson Hyperlegible Next** keeps the wght variable axis with Latin Basic + Extended-A + diacritics + general punctuation. Results in ~42 KB.
 
 Re-run `bash scripts/build-fonts.sh` after replacing the source TTFs in `fonts-src/` to refresh the bundled files. The OFL license files for both fonts ship next to them in `public/fonts/`.
 
 ### Workbox + woff2
 
-`vite.config.ts` adds `woff2` to `workbox.globPatterns` and raises `maximumFileSizeToCacheInBytes` to 3 MiB so the Noto Sans TC woff2 is precached. The two woff2 files are ~1.7 MB total; full installable PWA dist is ~2.3 MB.
+`vite.config.ts` adds `woff2` to `workbox.globPatterns` and raises `maximumFileSizeToCacheInBytes` to 3 MiB so the Noto Serif TC woff2 (~2.4 MB, the largest single file) is precached. The six woff2 files are ~9.6 MB total; full installable PWA dist is ~10 MB.
 
 ## i18n (`src/lib/i18n.ts`)
 

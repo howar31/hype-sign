@@ -6,7 +6,13 @@
 // declared in global.css via @font-face. System fonts fall back through
 // platform stacks and incur no download cost.
 
-export type FontId = 'system-sans' | 'system-mono' | 'noto-tc' | 'atkinson';
+export type FontId =
+  | 'system-sans'
+  | 'system-mono'
+  | 'noto-tc'
+  | 'noto-serif-tc'
+  | 'lxgw-wenkai-tc'
+  | 'atkinson';
 
 export type FontDef = {
   id: FontId;
@@ -33,6 +39,37 @@ export const FONT_SAMPLE_LINES = {
 } as const;
 
 export const FONTS: Record<FontId, FontDef> = {
+  'noto-tc': {
+    id: 'noto-tc',
+    labelKey: 'font.notoTc',
+    family:
+      "'NotoSansTC', system-ui, 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans CJK TC', sans-serif",
+    weightRange: { min: 100, max: 900 },
+    bundled: true,
+  },
+  'noto-serif-tc': {
+    id: 'noto-serif-tc',
+    labelKey: 'font.notoSerifTc',
+    family:
+      "'NotoSerifTC', system-ui, 'Songti TC', 'PMingLiU', serif",
+    weightRange: { min: 200, max: 900 },
+    bundled: true,
+  },
+  'lxgw-wenkai-tc': {
+    id: 'lxgw-wenkai-tc',
+    labelKey: 'font.lxgwWenkaiTc',
+    family:
+      "'LxgwWenKaiTC', 'BiauKai', 'DFKai-SB', 'PingFang TC', 'Microsoft JhengHei', sans-serif",
+    weightRange: { min: 300, max: 500 },
+    bundled: true,
+  },
+  atkinson: {
+    id: 'atkinson',
+    labelKey: 'font.atkinson',
+    family: "'AtkinsonHyperlegibleNext', system-ui, sans-serif",
+    weightRange: { min: 200, max: 800 },
+    bundled: true,
+  },
   'system-sans': {
     id: 'system-sans',
     labelKey: 'font.systemSans',
@@ -49,25 +86,15 @@ export const FONTS: Record<FontId, FontDef> = {
     weightRange: { min: 100, max: 700 },
     bundled: false,
   },
-  'noto-tc': {
-    id: 'noto-tc',
-    labelKey: 'font.notoTc',
-    family:
-      "'NotoSansTC', system-ui, 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans CJK TC', sans-serif",
-    weightRange: { min: 100, max: 900 },
-    bundled: true,
-  },
-  atkinson: {
-    id: 'atkinson',
-    labelKey: 'font.atkinson',
-    family: "'AtkinsonHyperlegibleNext', system-ui, sans-serif",
-    weightRange: { min: 200, max: 800 },
-    bundled: true,
-  },
 };
 
+// Picker render order. Bundled CJK + Latin faces first, then the system
+// fallbacks. FontPicker renders a horizontal divider at the bundled →
+// system boundary so the curated set reads as a discrete group.
 export const FONT_ORDER: FontId[] = [
   'noto-tc',
+  'noto-serif-tc',
+  'lxgw-wenkai-tc',
   'atkinson',
   'system-sans',
   'system-mono',

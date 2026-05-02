@@ -46,6 +46,8 @@ const ZH: Dict = {
   'font.systemSans': '系統預設',
   'font.systemMono': '系統等寬',
   'font.notoTc': 'Noto Sans TC',
+  'font.notoSerifTc': 'Noto Serif TC（明體）',
+  'font.lxgwWenkaiTc': '霞鶩文楷（楷書）',
   'font.atkinson': 'Atkinson 易讀',
 
   'rotate.label': '旋轉畫面',
@@ -149,6 +151,8 @@ const EN: Dict = {
   'font.systemSans': 'System Default',
   'font.systemMono': 'System Mono',
   'font.notoTc': 'Noto Sans TC',
+  'font.notoSerifTc': 'Noto Serif TC',
+  'font.lxgwWenkaiTc': 'LXGW WenKai TC',
   'font.atkinson': 'Atkinson Hyperlegible',
 
   'rotate.label': 'Rotate display',

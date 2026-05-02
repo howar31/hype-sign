@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useSettings } from '../../store/settingsStore';
 import { useT } from '../../lib/i18n';
 import {
@@ -42,30 +42,37 @@ export function FontPicker() {
         </button>
       </div>
       <div className="font-list" role="radiogroup" aria-label={t('font.label')}>
-        {FONT_ORDER.map((id: FontId) => {
+        {FONT_ORDER.map((id: FontId, idx) => {
           const f = FONTS[id];
           const selected = font === id;
           // Each row renders the sample at the user's current weight, clamped
           // to the font's wght axis. Lets the user compare typefaces while
           // still seeing the effect of the weight slider live.
           const sampleWeight = clampWeightForFont(id, fontWeight);
+          // Insert a horizontal divider at the bundled → system boundary so
+          // the curated set reads as a discrete group.
+          const prevId = idx > 0 ? FONT_ORDER[idx - 1] : null;
+          const showDivider =
+            prevId !== null && FONTS[prevId].bundled && !f.bundled;
           return (
-            <button
-              key={id}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              className={`font-row${selected ? ' selected' : ''}`}
-              onClick={() => setFont(id)}
-            >
-              <span className="font-row-label">{t(f.labelKey)}</span>
-              <span
-                className="font-row-sample"
-                style={{ fontFamily: f.family, fontWeight: sampleWeight }}
+            <Fragment key={id}>
+              {showDivider && <hr className="font-divider" aria-hidden />}
+              <button
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={`font-row${selected ? ' selected' : ''}`}
+                onClick={() => setFont(id)}
               >
-                {sample}
-              </span>
-            </button>
+                <span className="font-row-label">{t(f.labelKey)}</span>
+                <span
+                  className="font-row-sample"
+                  style={{ fontFamily: f.family, fontWeight: sampleWeight }}
+                >
+                  {sample}
+                </span>
+              </button>
+            </Fragment>
           );
         })}
       </div>

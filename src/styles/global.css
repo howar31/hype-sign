@@ -12,6 +12,38 @@
   font-display: swap;
 }
 @font-face {
+  font-family: 'NotoSerifTC';
+  src: url('/hype-sign/fonts/NotoSerifTC.woff2') format('woff2-variations'),
+       url('/hype-sign/fonts/NotoSerifTC.woff2') format('woff2');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+/* LXGW WenKai TC ships as three discrete static weights (Light 300 /
+   Regular 400 / Medium 500). The browser picks the closest one based on
+   the requested font-weight. */
+@font-face {
+  font-family: 'LxgwWenKaiTC';
+  src: url('/hype-sign/fonts/LXGWWenKaiTC-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LxgwWenKaiTC';
+  src: url('/hype-sign/fonts/LXGWWenKaiTC-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LxgwWenKaiTC';
+  src: url('/hype-sign/fonts/LXGWWenKaiTC-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
   font-family: 'AtkinsonHyperlegibleNext';
   src: url('/hype-sign/fonts/AtkinsonHyperlegibleNext.woff2') format('woff2-variations'),
        url('/hype-sign/fonts/AtkinsonHyperlegibleNext.woff2') format('woff2');
@@ -776,6 +808,16 @@ input[type='range'] {
   white-space: pre-line;
   word-break: break-word;
   overflow-wrap: anywhere;
+}
+
+/* Visual break between the bundled (curated) faces above and the system-
+   stack fallbacks below. Inserted by FontPicker between the last bundled
+   row and the first system-stack row. */
+.font-divider {
+  border: none;
+  height: 1px;
+  margin: 4px 4px 0;
+  background: var(--glass-stroke);
 }
 
 .preset-section-header {
