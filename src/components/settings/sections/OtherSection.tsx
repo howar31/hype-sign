@@ -27,12 +27,21 @@ const KofiIcon = () => (
   </svg>
 );
 
-const PaypalIcon = () => (
-  <svg viewBox="0 0 24 24" width={16} height={16} aria-hidden="true" focusable="false">
-    <path
-      fill="currentColor"
-      d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 5.05-5.78 5.05h-2.052c-.524 0-.968.382-1.05.9l-1.12 7.106-.32 2.027a.553.553 0 0 0 .547.642h3.882c.456 0 .844-.331.917-.787.024-.13.6-3.812.624-3.928a.918.918 0 0 1 .907-.776h.572c3.708 0 6.611-1.506 7.459-5.864.354-1.821.171-3.341-.768-4.41z"
-    />
+// Sponsor-page mark: heart outline, see ~/.claude/skills/accept-donations/references/sponsor-mark.md
+const HeartIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    width={16}
+    height={16}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
   </svg>
 );
 
@@ -67,6 +76,17 @@ export function OtherSection() {
           </a>
           <a
             className="icon-link"
+            data-brand="page"
+            href="https://donate.howar31.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${sponsor} · donate.howar31.com`}
+            title={`${sponsor} · donate.howar31.com`}
+          >
+            <HeartIcon />
+          </a>
+          <a
+            className="icon-link"
             data-brand="kofi"
             href="https://ko-fi.com/howar31"
             target="_blank"
@@ -75,17 +95,6 @@ export function OtherSection() {
             title={`Ko-fi · ${sponsor}`}
           >
             <KofiIcon />
-          </a>
-          <a
-            className="icon-link"
-            data-brand="paypal"
-            href="https://donate.howar31.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`PayPal · ${sponsor}`}
-            title={`PayPal · ${sponsor}`}
-          >
-            <PaypalIcon />
           </a>
         </div>
       </div>

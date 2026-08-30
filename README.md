@@ -42,7 +42,7 @@ A fully-offline cheering board / LED display PWA. Multi-color gradients, marquee
 
   Single-weight fonts are excluded by design — the font weight slider needs at least two values to be useful.
 - **Font weight slider** — 100 to 900 in steps of 100, automatically clamped to the selected font's variable-axis range.
-- **Build-version footer** — the Settings tab shows the deployed commit and quietly notes when a new version has been downloaded in the background. Brand-tinted icon links to the GitHub repo, Ko-fi, and PayPal.
+- **Build-version footer** — the Settings tab shows the deployed commit and quietly notes when a new version has been downloaded in the background. Brand-tinted icon links to the GitHub repo, the sponsor page (donate.howar31.com), and Ko-fi.
 
 ## Screenshots
 
@@ -78,7 +78,7 @@ The drawer has five tabs:
 | Font | font weight slider · font picker (full-width rows with live sample) |
 | Tint | text-color editor · save current color · shared color presets (apply to text, edit mode for reorder + delete) · reset tint |
 | Backdrop | background-color editor · save current color · shared color presets (apply to background, edit mode for reorder + delete) · reset backdrop |
-| Settings | rotate · fullscreen · edge margin · language · build version (with quiet new-version hint) · GitHub / Ko-fi / PayPal icon links |
+| Settings | rotate · fullscreen · edge margin · language · build version (with quiet new-version hint) · GitHub / sponsor page / Ko-fi icon links |
 
 A tap on the design canvas opens or closes the panel. The panel overlays the canvas; closing it reveals the unobstructed design.
 
